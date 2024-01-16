@@ -20,6 +20,10 @@ class ProductRepository {
       throw new Error(`Error while fetching products: ${error.message}`);
     }
   }
+
+  async findProduct(query){
+    return ProductModel.findOne(query).exec();
+  }
 }
 
 module.exports = ProductRepository;
