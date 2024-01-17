@@ -24,11 +24,6 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  console.log(`Solicitud recibida: ${req.method} ${req.url}`);
-  next();
-});
-
 app.use("/api/users", userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/platforms', platformRoutes);
@@ -39,9 +34,12 @@ app.use('/api/shops', shopRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/big-orders', bigOrderRoutes)
-app.use("/", express.static("./../royalMercaderistasFrontend/.next/server/pages/", { redirect: false }));
-app.get("*", function (req, res, next) {
-  res.sendFile(path.resolve("./../royalMercaderistasFrontend/.next/server/pages/index.html"));
+
+const nextStaticPath = path.join(__dirname, "./../royalMercaderistasFrontend/.next");
+app.use(express.static(nextStaticPath));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(nextStaticPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
