@@ -1,3 +1,4 @@
+const compression = require("compression");
 const express = require("express");
 const bodyParser = require("body-parser");
 const userRoutes = require("./src/infrastructure/web/routes/userRoutes");
@@ -13,10 +14,15 @@ const bigOrderRoutes = require("./src/infrastructure/web/routes/bigOrderRoutes")
 
 require("./src/infrastructure/persistence/mongoose");
 const cors = require("cors");
+const path = require("path");
 const app = express();
 
+app.use(compression());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
 app.use(cors());
+app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use('/api/roles', roleRoutes);
@@ -28,6 +34,10 @@ app.use('/api/shops', shopRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/big-orders', bigOrderRoutes)
+app.use("/", express.static("./../royalMercaderistasFrontend/.next/server/pages/", { redirect: false }));
+app.get("*", function (req, res, next) {
+  res.sendFile(path.resolve("./../royalMercaderistasFrontend/.next/server/pages/index.html"));
+});
 
 const PORT = process.env.PORT || 3000;
 
