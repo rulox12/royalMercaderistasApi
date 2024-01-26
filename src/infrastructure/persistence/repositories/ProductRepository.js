@@ -24,6 +24,16 @@ class ProductRepository {
   async findProduct(query){
     return ProductModel.findOne(query).exec();
   }
+
+  async delete(productId) {
+    try {
+      const productDelete = await ProductModel.findByIdAndDelete(productId);
+      
+      return productDelete;
+    } catch (error) {
+      throw new Error(`Error while delete product: ${error.message}`);
+    }
+  }
 }
 
 module.exports = ProductRepository;

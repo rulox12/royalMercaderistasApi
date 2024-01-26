@@ -1,6 +1,7 @@
 const CreateCityUseCase = require('../../../application/useCases/city/createCity');
 const GetCityUseCase = require('../../../application/useCases/city/getCity');
 const GetCitiesUseCase = require('../../../application/useCases/city/getCities');
+const DeleteCityUseCase = require('../../../application/useCases/city/deleteCity');
 
 const cityController = {
   createCity: async (req, res) => {
@@ -14,6 +15,7 @@ const cityController = {
       res.status(500).json({ error: error.message });
     }
   },
+  
   getCity: async (req, res) => {
     try {
       const cityId = req.params.cityId;
@@ -28,6 +30,7 @@ const cityController = {
       res.status(500).json({ error: error.message });
     }
   },
+
   getCities: async (req, res) => {
     try {
       const cities = await GetCitiesUseCase.execute();
@@ -37,6 +40,16 @@ const cityController = {
       }
 
       res.status(200).json(cities);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  deleteCity: async (req, res) => {
+    try {
+      const cityDelete = await DeleteCityUseCase.execute(req.body.cityId);
+      
+      res.status(200).json(cityDelete);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

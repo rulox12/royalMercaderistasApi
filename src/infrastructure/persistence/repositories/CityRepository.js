@@ -22,6 +22,16 @@ class CityRepository {
       throw new Error(`Error while fetching lists: ${error.message}`);
     }
   }
+
+  async delete(cityId) {
+    try {
+      const cityDelete = await City.findByIdAndDelete(cityId);
+
+      return cityDelete;
+    } catch (error) {
+      throw new Error(`Error while delete city: ${error.message}`);
+    }
+  }
 }
 
 module.exports = CityRepository;

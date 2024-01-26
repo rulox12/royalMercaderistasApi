@@ -2,6 +2,7 @@ const CreateProductUseCase = require("../../../application/useCases/product/crea
 const GetProductUseCase = require("../../../application/useCases/product/getProduct");
 const GetProductsUseCase = require("../../../application/useCases/product/getProducts");
 const UpdateProductUseCase = require("../../../application/useCases/product/updateProduct");
+const DeleteProductUseCase = require("../../../application/useCases/product/deleteProduct");
 
 const productController = {
   createProduct: async (req, res) => {
@@ -62,6 +63,17 @@ const productController = {
       }
 
       res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+
+  deleteProduct: async (req, res) => {
+    try {
+      const productDelete = await DeleteProductUseCase.execute(req.body.productId);
+
+      res.status(200).json(productDelete);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

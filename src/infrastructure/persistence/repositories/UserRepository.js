@@ -31,6 +31,15 @@ class UserRepository {
       throw new Error(`Error while fetching users: ${error.message}`);
     }
   }
+
+  async delete(id) {
+    try {
+      const user = await UserModel.findByIdAndDelete(id);
+      return user;
+    } catch (error) {
+      throw new Error(`Error while delete user: ${error.message}`);
+    }
+  }
 }
 
 module.exports = UserRepository;

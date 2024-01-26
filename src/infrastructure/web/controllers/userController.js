@@ -1,6 +1,7 @@
 const CreateUserUseCase = require("../../../application/useCases/user/createUser");
 const GetUserUseCase = require("../../../application/useCases/user/getUser");
 const GetUsersUseCase = require("../../../application/useCases/user/getUsers");
+const DeleteUserUseCase = require('../../../application/useCases/user/deleteUser');
 
 const userController = {
   createUser: async (req, res) => {
@@ -68,6 +69,16 @@ const userController = {
       }
 
       res.status(200).json(users);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  deleteUser: async (req, res) => {
+    try {
+      const userDelete = await DeleteUserUseCase.execute(req.body.userId);
+
+      res.status(200).json(userDelete);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

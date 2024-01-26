@@ -38,8 +38,9 @@ app.use('/api/big-orders', bigOrderRoutes)
 const nextStaticPath = path.join(__dirname, "./../royalMercaderistasFrontend/.next");
 app.use(express.static(nextStaticPath));
 
+const indexPath = path.resolve(__dirname, "./../royalMercaderistasFrontend/.next/server/pages/index.html");
 app.get("*", (req, res) => {
-  res.sendFile(path.resolve(nextStaticPath, "index.html"));
+  res.sendFile(indexPath);
 });
 
 const PORT = process.env.PORT || 3000;

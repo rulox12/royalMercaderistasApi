@@ -33,6 +33,15 @@ class ShopRepository {
       throw new Error(`Error while fetching shops: ${error.message}`);
     }
   }
+
+  async delete(shopId) {
+    try {
+      const shopDelete = await ShopModel.findByIdAndDelete(shopId);
+      return shopDelete;
+    } catch (error) {
+      throw new Error(`Error while fetching shops: ${error.message}`);
+    }
+  }
 }
 
 module.exports = ShopRepository;

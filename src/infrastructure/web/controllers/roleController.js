@@ -1,6 +1,7 @@
 const CreateRoleUseCase = require('../../../application/useCases/role/createRole');
 const GetRoleUseCase = require('../../../application/useCases/role/getRole');
 const GetRolesUseCase = require('../../../application/useCases/role/getRoles');
+const DeleteRoleUseCase = require('../../../application/useCases/role/deleteRole');
 
 const roleController = {
   createRole: async (req, res) => {
@@ -14,6 +15,7 @@ const roleController = {
       res.status(500).json({ error: error.message });
     }
   },
+
   getRole: async (req, res) => {
     try {
       const roleId = req.params.roleId;
@@ -28,6 +30,7 @@ const roleController = {
       res.status(500).json({ error: error.message });
     }
   },
+
   getRoles: async (req, res) => {
     try {
       const role = await GetRolesUseCase.execute();
@@ -35,6 +38,16 @@ const roleController = {
       if (!role) {
         return res.status(404).json({ message: "No se encontraron roles" });
       }
+
+      res.status(200).json(role);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  deleteRole: async (req, res) => {
+    try {
+      const role = await DeleteRoleUseCase.execute(req.body.roleId);
 
       res.status(200).json(role);
     } catch (error) {

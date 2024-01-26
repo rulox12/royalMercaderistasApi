@@ -20,6 +20,15 @@ class RoleRepository {
       throw new Error(`Error while fetching roles: ${error.message}`);
     }
   }
+
+  async delete(id) {
+    try {
+      const role = await RoleModel.findByIdAndDelete(id);
+      return role;
+    } catch (error) {
+      throw new Error(`Error while fetching roles: ${error.message}`);
+    }
+  }
 }
 
 module.exports = RoleRepository;
