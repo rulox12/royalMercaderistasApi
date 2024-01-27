@@ -6,12 +6,12 @@ class CreateProductUseCase {
     this.productRepository = productRepository;
   }
 
-  async execute(internalProductNumber, name, presentation, quantity, supplier, displayName, position) {
-    const product = new Product(internalProductNumber, name, presentation, quantity, supplier, displayName, position);
+  async execute(internalProductNumber, name, presentation, supplier, displayName, position) {
+    const product = new Product(internalProductNumber, name, presentation, supplier, displayName, position);
 
     const queryName = { name }
     const existProductName = await this.productRepository.findProduct(queryName);
-    if (existProductName){
+    if (existProductName) {
       throw new Error("Ya existe un producto con este nombre");
     }
 
@@ -20,7 +20,7 @@ class CreateProductUseCase {
     if (existProductPosition) {
       throw new Error("Ya existe un producto con la posición indicada");
     }
-    
+
     return await this.productRepository.create(product);
   }
 }

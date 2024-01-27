@@ -11,14 +11,6 @@ class UserRepository {
     return UserModel.findById(userId).exec();
   }
 
-  async update(userId, username, email) {
-    return UserModel.findByIdAndUpdate(
-      userId,
-      { username, email },
-      { new: true }
-    ).exec();
-  }
-
   async findByEmail(email) {
     return UserModel.findOne({ email }).exec();
   }
@@ -38,6 +30,21 @@ class UserRepository {
       return user;
     } catch (error) {
       throw new Error(`Error while delete user: ${error.message}`);
+    }
+  }
+
+
+  async update(userId, updatedFields) {
+    try {
+      const updateUser = await UserModel.findByIdAndUpdate(
+        userId,
+        updatedFields,
+        { new: true }
+      );
+
+      return updateUser;
+    } catch (error) {
+      throw new Error(`Error while updating user: ${error.message}`);
     }
   }
 }

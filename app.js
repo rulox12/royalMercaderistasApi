@@ -14,7 +14,6 @@ const bigOrderRoutes = require("./src/infrastructure/web/routes/bigOrderRoutes")
 
 require("./src/infrastructure/persistence/mongoose");
 const cors = require("cors");
-const path = require("path");
 const app = express();
 
 app.use(compression());
@@ -34,14 +33,6 @@ app.use('/api/shops', shopRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/big-orders', bigOrderRoutes)
-
-const nextStaticPath = path.join(__dirname, "./../royalMercaderistasFrontend/.next");
-app.use(express.static(nextStaticPath));
-
-const indexPath = path.resolve(__dirname, "./../royalMercaderistasFrontend/.next/server/pages/index.html");
-app.get("*", (req, res) => {
-  res.sendFile(indexPath);
-});
 
 const PORT = process.env.PORT || 3000;
 

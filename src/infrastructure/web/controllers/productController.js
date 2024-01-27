@@ -7,8 +7,8 @@ const DeleteProductUseCase = require("../../../application/useCases/product/dele
 const productController = {
   createProduct: async (req, res) => {
     try {
-      const { internalProductNumber, name, presentation, quantity, supplier, displayName, position } = req.body;
-      const createProduct = await CreateProductUseCase.execute(internalProductNumber, name, presentation, quantity, supplier, displayName, position);
+      const { internalProductNumber, name, presentation, supplier, displayName, position } = req.body;
+      const createProduct = await CreateProductUseCase.execute(internalProductNumber, name, presentation, supplier, displayName, position);
 
       res.status(201).json(createProduct);
     } catch (error) {
@@ -32,17 +32,10 @@ const productController = {
 
   updateProduct: async (req, res) => {
     try {
-      const productId = req.params.productId;
-      const { name, quantity, supplier, displayName, position } = req.body;
+      const { productId } = req.params;
+      const updateFields = req.body;
 
-      const updatedProduct = await UpdateProductUseCase.execute(
-        productId,
-        name,
-        quantity,
-        supplier,
-        displayName,
-        position
-      );
+      const updatedProduct = await UpdateProductUseCase.execute(productId, updateFields);
 
       if (!updatedProduct) {
         return res.status(404).json({ message: "Producto no encontrado" });
@@ -50,7 +43,7 @@ const productController = {
 
       res.status(200).json(updatedProduct);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Ocurrio un error' });
     }
   },
 

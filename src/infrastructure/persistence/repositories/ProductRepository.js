@@ -34,6 +34,20 @@ class ProductRepository {
       throw new Error(`Error while delete product: ${error.message}`);
     }
   }
+
+  async update(productId, updatedFields) {
+    try {
+      const updatedProduct = await ProductModel.findByIdAndUpdate(
+        productId,
+        updatedFields,
+        { new: true }
+      );
+
+      return updatedProduct;
+    } catch (error) {
+      throw new Error(`Error while updating product: ${error.message}`);
+    }
+  }
 }
 
 module.exports = ProductRepository;

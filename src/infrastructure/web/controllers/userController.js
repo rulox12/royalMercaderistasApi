@@ -2,6 +2,7 @@ const CreateUserUseCase = require("../../../application/useCases/user/createUser
 const GetUserUseCase = require("../../../application/useCases/user/getUser");
 const GetUsersUseCase = require("../../../application/useCases/user/getUsers");
 const DeleteUserUseCase = require('../../../application/useCases/user/deleteUser');
+const UpdateUserUseCase = require('../../../application/useCases/user/updateUser');
 
 const userController = {
   createUser: async (req, res) => {
@@ -41,13 +42,12 @@ const userController = {
 
   updateUser: async (req, res) => {
     try {
-      const userId = req.params.userId;
-      const { username, email } = req.body;
+      const { userId } = req.params;
+      const paramsToUpdate = req.body;
 
       const updatedUser = await UpdateUserUseCase.execute(
         userId,
-        username,
-        email
+        paramsToUpdate
       );
 
       if (!updatedUser) {

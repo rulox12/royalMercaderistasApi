@@ -5,9 +5,23 @@ class UpdateUserUseCase {
     this.userRepository = userRepository;
   }
 
-  async execute(userId, username, email) {
-    return this.userRepository.update(userId, username, email);
+  async execute(userId, updateFields) {
+    try {
+      const existingUser = await this.userRepository.findById(userId);
+
+      if (!existingUser) {
+        throw new Error("Usuario no encontrado");
+      }
+
+      Object.assign(existingUser, updateFields);
+
+      const updatedUser = await this.userRepository.update(userId, existingUser);
+
+      return updatedUser;
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 }
 
-module.exports = new UpdateUserUseCase(UserRepository);
+module.exports = new UpdateUserUseCase(new UserRepository());
