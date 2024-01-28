@@ -1,3 +1,4 @@
+const bcrypt = require("bcryptjs/dist/bcrypt");
 const UserRepository = require("../../../infrastructure/persistence/repositories/UserRepository");
 
 class UpdateUserUseCase {
