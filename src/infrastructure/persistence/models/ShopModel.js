@@ -15,7 +15,6 @@ const shopSchema = new mongoose.Schema({
   },
   manager: {
     type: String,
-    required: true,
   },
   phone: {
     type: String,
@@ -23,11 +22,9 @@ const shopSchema = new mongoose.Schema({
   },
   boss: {
     type: String,
-    required: true,
   },
   bossPhone: {
     type: String,
-    required: true,
   },
   platformId: {
     type: mongoose.Schema.Types.ObjectId,
