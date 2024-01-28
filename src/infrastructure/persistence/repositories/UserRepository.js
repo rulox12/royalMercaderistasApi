@@ -17,7 +17,7 @@ class UserRepository {
 
   async getAllUsers() {
     try {
-      const users = await UserModel.find();
+      const users = await UserModel.find().populate('roleId');
       return users;
     } catch (error) {
       throw new Error(`Error while fetching users: ${error.message}`);
