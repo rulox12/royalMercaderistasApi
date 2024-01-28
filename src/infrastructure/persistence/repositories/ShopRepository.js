@@ -25,12 +25,17 @@ class ShopRepository {
     }
   }
 
-  async update(shopId, shop) {
+  async update(shopId, updatedFields) {
     try {
-      const newShop = await ShopModel.findByIdAndUpdate({ id: shopId }, shop);
-      return newShop;
+      const updateShop = await ShopModel.findByIdAndUpdate(
+        shopId,
+        updatedFields,
+        { new: true }
+      );
+
+      return updateShop;
     } catch (error) {
-      throw new Error(`Error while fetching shops: ${error.message}`);
+      throw new Error(`Error while updating shop: ${error.message}`);
     }
   }
 

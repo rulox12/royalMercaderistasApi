@@ -5,16 +5,23 @@ class UpdateShopUseCase {
     this.shopRepository = shopRepository;
   }
 
-  async execute(shopId, shopData) {
-    const { shopNumber, name, address, manager, phone, boss, bossPhone, platformId, cityId, listId, userId } = shopData;
-    const existingShop = await this.shopRepository.findByShopNumber(shopNumber);
-    if (!existingShop) {
-      throw new Error("La tienda no existe");
-    }
+  async execute(shopId, updateFields) {
+    try {
+      const existingShop = await this.shopRepository.findById(shopId);
 
-    const newShop = new Shop(shopId, shopNumber, name, address, manager, phone, boss, bossPhone, platformId, cityId, listId, userId);
-    return this.shopRepository.update(shopId, newShop);
+      if (!existingShop) {
+        throw new Error("Tienda no encontrado");
+      }
+
+      Object.assign(existingShop, updateFields);
+
+      const updateShop = await this.shopRepository.update(shopId, existingShop);
+
+      return updateShop;
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 }
 
-module.exports = new UpdateShopUseCase(ShopRepository);
+module.exports = new UpdateShopUseCase(new ShopRepository());
