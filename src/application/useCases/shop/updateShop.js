@@ -12,7 +12,7 @@ class UpdateShopUseCase {
       if (!existingShop) {
         throw new Error("Tienda no encontrado");
       }
-
+      
       Object.assign(existingShop, updateFields);
 
       const updateShop = await this.shopRepository.update(shopId, existingShop);
