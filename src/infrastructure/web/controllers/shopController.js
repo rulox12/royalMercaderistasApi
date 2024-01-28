@@ -2,6 +2,7 @@ const CreateShopUseCase = require("../../../application/useCases/shop/createShop
 const GetShopUseCase = require("../../../application/useCases/shop/getShop");
 const GetShopsUseCase = require("../../../application/useCases/shop/getShops");
 const UpdateShopUseCase = require("../../../application/useCases/shop/updateShop");
+const DeleteShopUseCase = require("../../../application/useCases/shop/deleteShop");
 
 const shopController = {
   createShop: async (req, res) => {
@@ -80,6 +81,16 @@ const shopController = {
       }
 
       res.status(200).json(shops);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  deleteShop: async (req, res) => {
+    try {
+      const shopDeleted = await DeleteShopUseCase.execute(req.body.shopId);
+
+      res.status(200).json(shopDeleted);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
