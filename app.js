@@ -11,6 +11,7 @@ const shopRoutes = require("./src/infrastructure/web/routes/shopRoutes")
 const orderRoutes = require("./src/infrastructure/web/routes/orderRoutes")
 const authRoutes = require("./src/infrastructure/web/routes/authRoutes")
 const bigOrderRoutes = require("./src/infrastructure/web/routes/bigOrderRoutes")
+const supplierRoutes = require("./src/infrastructure/web/routes/supplierRoutes")
 
 require("./src/infrastructure/persistence/mongoose");
 const cors = require("cors");
@@ -33,6 +34,7 @@ app.use('/api/shops', shopRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/big-orders', bigOrderRoutes)
+app.use('/api/suppliers', supplierRoutes)
 
 const PORT = process.env.PORT || 3000;
 

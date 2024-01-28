@@ -13,16 +13,17 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  supplier: {
-    type: String,
-    required: true,
-  },
   displayName: {
     type: String,
     required: true,
   },
   position: {
     type: String,
+    required: true,
+  },
+  supplierId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Supplier",
     required: true,
   },
 });

@@ -8,8 +8,8 @@ class RoleRepository {
     return newRole.toObject();
   }
 
-  async findById(userId) {
-    return RoleModel.findById(userId).exec();
+  async findById(roleId) {
+    return RoleModel.findById(roleId).exec();
   }
 
   async getAllRoles() {

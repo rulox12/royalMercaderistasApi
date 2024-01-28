@@ -7,8 +7,8 @@ const DeleteProductUseCase = require("../../../application/useCases/product/dele
 const productController = {
   createProduct: async (req, res) => {
     try {
-      const { internalProductNumber, name, presentation, supplier, displayName, position } = req.body;
-      const createProduct = await CreateProductUseCase.execute(internalProductNumber, name, presentation, supplier, displayName, position);
+      const { internalProductNumber, name, presentation, displayName, position, supplierId } = req.body;
+      const createProduct = await CreateProductUseCase.execute(internalProductNumber, name, presentation, displayName, position, supplierId);
 
       res.status(201).json(createProduct);
     } catch (error) {

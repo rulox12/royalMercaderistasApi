@@ -6,8 +6,8 @@ class CreateProductUseCase {
     this.productRepository = productRepository;
   }
 
-  async execute(internalProductNumber, name, presentation, supplier, displayName, position) {
-    const product = new Product(internalProductNumber, name, presentation, supplier, displayName, position);
+  async execute(internalProductNumber, name, presentation, displayName, position, supplierId) {
+    const product = new Product(internalProductNumber, name, presentation, displayName, position,supplierId);
 
     const queryName = { name }
     const existProductName = await this.productRepository.findProduct(queryName);
