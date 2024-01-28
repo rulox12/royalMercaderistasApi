@@ -1,5 +1,5 @@
-const Supplier = require('../../../domain/models/supplier');
 const SupplierRepository = require('../../../infrastructure/persistence/repositories/SupplierRepository');
+const Supplier = require('../../../domain/models/Supplier');
 
 class CreateSupplierUseCase {
   constructor(supplierRepository) {
