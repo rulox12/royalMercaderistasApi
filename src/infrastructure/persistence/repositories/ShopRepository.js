@@ -16,9 +16,9 @@ class ShopRepository {
     return ShopModel.findOne({ shopNumber }).exec();
   }
 
-  async getAll() {
+  async getAll(filters) {
     try {
-      const shops = await ShopModel.find();
+      const shops = await ShopModel.find(filters);
       return shops;
     } catch (error) {
       throw new Error(`Error while fetching shops: ${error.message}`);

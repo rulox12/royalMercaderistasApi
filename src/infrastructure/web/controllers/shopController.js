@@ -74,7 +74,8 @@ const shopController = {
 
   getShops: async (req, res) => {
     try {
-      const shops = await GetShopsUseCase.execute();
+      const filters = req.query;
+      const shops = await GetShopsUseCase.execute(filters);
 
       if (!shops) {
         return res.status(404).json({ message: "Tiendas no encontradas" });

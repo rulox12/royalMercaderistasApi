@@ -5,8 +5,8 @@ class GetShopsUseCase {
     this.shopRepository = shopRepository;
   }
 
-  async execute() {
-    return this.shopRepository.getAll();
+  async execute(filters) {
+    return this.shopRepository.getAll(filters);
   }
 }
 
