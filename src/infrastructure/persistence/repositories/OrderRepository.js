@@ -38,6 +38,15 @@ class OrderRepository {
       throw new Error(`Error while fetching orders: ${error.message}`);
     }
   }
+
+  async getOrdersByUser(userId) {
+    try {
+      const orders = await OrderModel.find({date});
+      return orders;
+    } catch (error) {
+      throw new Error(`Error while fetching orders: ${error.message}`);
+    }
+  }
 }
 
 module.exports = OrderRepository;
