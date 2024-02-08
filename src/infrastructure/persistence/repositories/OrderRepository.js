@@ -13,9 +13,9 @@ class OrderRepository {
     return OrderModel.findById(orderId).exec();
   }
 
-  async getAll() {
+  async getAll(filters) {
     try {
-      const orders = await OrderModel.find();
+      const orders = await OrderModel.find(filters);
       return orders;
     } catch (error) {
       throw new Error(`Error while fetching orders: ${error.message}`);
