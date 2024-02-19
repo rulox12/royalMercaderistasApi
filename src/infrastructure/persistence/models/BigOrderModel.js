@@ -10,6 +10,11 @@ const BigOrderScheme = new Schema({
         type: String,
         required: true,
     },
+    cityId: {
+        type: String,
+        ref: "City",
+        required: true
+    }
 });
 
 const BigOrderModel = mongoose.model('BigOrder', BigOrderScheme);

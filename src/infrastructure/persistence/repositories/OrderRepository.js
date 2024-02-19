@@ -41,10 +41,33 @@ class OrderRepository {
 
   async getOrdersByUser(userId) {
     try {
-      const orders = await OrderModel.find({date});
+      const orders = await OrderModel.find({userId});
       return orders;
     } catch (error) {
       throw new Error(`Error while fetching orders: ${error.message}`);
+    }
+  }
+
+  async get(filters) {
+    try {
+      const orders = await OrderModel.findOne(filters);
+      return orders;
+    } catch (error) {
+      throw new Error(`Error while fetching orders: ${error.message}`);
+    }
+  }
+
+  async update(orderId, updatedFields) {
+    try {
+      const updatedOrder = await OrderModel.findByIdAndUpdate(
+        orderId,
+        updatedFields,
+        { new: true }
+      );
+
+      return updatedOrder;
+    } catch (error) {
+      throw new Error(`Error while updating order: ${error.message}`);
     }
   }
 }

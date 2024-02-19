@@ -26,10 +26,10 @@ class CreateOrderDetailsUseCase {
             };
             
             if (existingDetail) {
-                await this.orderDetailsRepository.update(existingDetail._id, orderDetail);
+                const updatedOrderDetail = await this.orderDetailsRepository.update(existingDetail._id, orderDetail);
+                orderDetails.push(updatedOrderDetail);
             } else {
                 orderDetail['PEDI_REAL'] = PEDI;
-                console.log(orderDetail);
                 const createdOrderDetail = await this.orderDetailsRepository.create(orderDetail);
                 orderDetails.push(createdOrderDetail);
             }

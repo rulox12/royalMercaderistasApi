@@ -6,13 +6,13 @@ class CreateBigOrderUseCase {
     this.bigOrderRepository = bigOrderRepository
   }
 
-  async execute(date) {
-    const existBigOrder = await this.bigOrderRepository.findByDate(date)
+  async execute(date, cityId) {
+    const existBigOrder = await this.bigOrderRepository.findByDate(date, cityId)
 
     if (existBigOrder) {
-      throw new Error("Ya existe un pedido generada");
+      throw new Error("Ya existe un pedido generado");
     } else {
-      const newBigOrder = new BigOrder(null, date);
+      const newBigOrder = new BigOrder(null, date, cityId);
       const createdBigOrder = await this.bigOrderRepository.create(newBigOrder);
       return createdBigOrder;
     }

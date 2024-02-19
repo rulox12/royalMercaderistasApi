@@ -3,16 +3,16 @@ const GetOrderUseCase = require('../../../application/useCases/order/getOrder');
 const GetOrdersUseCase = require('../../../application/useCases/order/getOrders');
 const CreateOrderDetailsUseCase = require('../../../application/useCases/order/createOrderDetailsUseCase');
 const GetManyOrdersUseCase = require('../../../application/useCases/order/getManyOrdersUseCase');
-const getOrdersByDateWithDetails = require('../../../application/useCases/order/getOrdersByUser');
+const getOrdersByDateWithDetails = require('../../../application/useCases/order/getOrdersByDateWithDetails');
 
 const orderController = {
   createOrder: async (req, res) => {
     try {
-      const { shopId, userId, orders } = req.body;
+      const { shopId, userId, orders, cityId } = req.body;
       const createdOrders = [];
       for (const orderDate in orders) {
         const products = orders[orderDate];
-        const createdOrder = await CreateOrderUseCase.execute(shopId, orderDate, userId);
+        const createdOrder = await CreateOrderUseCase.execute(shopId, orderDate, userId, cityId);
         const createdOrderDetails = await CreateOrderDetailsUseCase.execute(createdOrder._id, products);
         createdOrders.push({ order: createdOrder, orderDetails: createdOrderDetails });
       }
