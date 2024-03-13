@@ -7,7 +7,7 @@ const roleController = {
   createRole: async (req, res) => {
     try {
       const { name, description } = req.body;
-      console.log(name, description);
+
       const createdRole = await CreateRoleUseCase.execute(name, description);
 
       res.status(201).json(createdRole);

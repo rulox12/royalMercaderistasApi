@@ -1,8 +1,8 @@
+const CityModel = require("../models/CityModel");
 const City = require("../models/CityModel");
 
 class CityRepository {
   async create(city) {
-    console.log(city);
     const newCity = new City(city);
     await newCity.save();
 
@@ -30,6 +30,20 @@ class CityRepository {
       return cityDelete;
     } catch (error) {
       throw new Error(`Error while delete city: ${error.message}`);
+    }
+  }
+  
+  async update(cityId, updatedFields) {
+    try {
+      const updatedCity = await CityModel.findByIdAndUpdate(
+        cityId,
+        updatedFields,
+        { new: true }
+      );
+
+      return updatedCity;
+    } catch (error) {
+      throw new Error(`Error while updating city: ${error.message}`);
     }
   }
 }

@@ -18,7 +18,7 @@ class ShopRepository {
 
   async getAll(filters) {
     try {
-      const shops = await ShopModel.find(filters).populate('userId');
+      const shops = await ShopModel.find(filters).populate(['userId','cityId', 'listId']);
       return shops;
     } catch (error) {
       throw new Error(`Error while fetching shops: ${error.message}`);

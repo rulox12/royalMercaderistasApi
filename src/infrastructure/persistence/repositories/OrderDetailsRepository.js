@@ -43,6 +43,7 @@ class OrderDetailsRepository {
 
     async create(orderDetail) {
         try {
+            console.log(orderDetail);
             const createdOrderDetail = await OrderDetailsModel.create(orderDetail);
             return createdOrderDetail;
         } catch (error) {

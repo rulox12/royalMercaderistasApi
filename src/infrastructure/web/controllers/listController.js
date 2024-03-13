@@ -8,7 +8,7 @@ const listController = {
   createList: async (req, res) => {
     try {
       const { name } = req.body;
-      console.log(name);
+
       const createdList = await CreateListUseCase.execute(name);
 
       res.status(201).json(createdList);

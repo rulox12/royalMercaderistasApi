@@ -8,19 +8,7 @@ const shopController = {
   createShop: async (req, res) => {
     try {
       const { shopNumber, name, address, manager, phone, boss, bossPhone, platformId, cityId, listId, userId } = req.body;
-      console.log({
-        shopNumber,
-        name,
-        address,
-        manager,
-        phone,
-        boss,
-        bossPhone,
-        platformId,
-        cityId,
-        listId,
-        userId
-      });
+     
       const createdShop = await CreateShopUseCase.execute({
         shopNumber,
         name,

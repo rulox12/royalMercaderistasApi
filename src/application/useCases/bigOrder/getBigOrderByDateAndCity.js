@@ -16,7 +16,7 @@ class GetBigOrderByDateandCity {
         }
 
         const orders = await this.orderRepository.getAll({date, cityId});
-        console.log(orders);
+
 
         const ordersWithDetails = await Promise.all(
             orders.map(async (order) => {

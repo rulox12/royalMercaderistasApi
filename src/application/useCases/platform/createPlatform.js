@@ -8,7 +8,7 @@ class CreatePlatformUseCase {
 
   async execute(name, nit) {
     const existingPlatform = await this.platformRepository.findByNit(nit);
-    console.log(existingPlatform);
+    
     if (existingPlatform) {
       throw new Error("Ya existe la plataforma");
     }

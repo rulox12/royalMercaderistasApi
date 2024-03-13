@@ -24,7 +24,7 @@ class UpdateBigOrder {
         } else {
           const newOrder = new Order(null, bigOrder.date, shopId, 'APPROVED', userId, bigOrder.cityId);
           const order = await this.orderRepository.create(newOrder);
-          orderId = order.id;
+          orderId = order._id;
         }
 
         const orderDetail = await this.orderDetailRepository.findByOrderIdAndProductId(orderId, productId);

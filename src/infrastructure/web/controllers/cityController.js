@@ -2,6 +2,7 @@ const CreateCityUseCase = require('../../../application/useCases/city/createCity
 const GetCityUseCase = require('../../../application/useCases/city/getCity');
 const GetCitiesUseCase = require('../../../application/useCases/city/getCities');
 const DeleteCityUseCase = require('../../../application/useCases/city/deleteCity');
+const UpdateCityUseCase = require('../../../application/useCases/city/updateCity');
 
 const cityController = {
   createCity: async (req, res) => {
@@ -26,6 +27,23 @@ const cityController = {
       }
 
       res.status(200).json(city);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  updateCity: async (req, res) => {
+    try {
+      const cityId = req.params.cityId;
+      const cityData = req.body;
+
+      const updatedCity = await UpdateCityUseCase.execute(cityId, cityData);
+
+      if (!updatedCity) {
+        return res.status(404).json({ message: "Ciudad no encontrada" });
+      }
+
+      res.status(200).json(updatedCity);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

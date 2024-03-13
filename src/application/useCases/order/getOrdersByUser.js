@@ -7,7 +7,6 @@ class GetOrdersByUserUseCase {
 
     async execute(userId) {
         const orders = await this.orderRepository.getOrdersByUser(userId);
-        console.log(orders);
     }
 }
 

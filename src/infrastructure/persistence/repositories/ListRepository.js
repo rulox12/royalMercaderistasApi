@@ -31,7 +31,6 @@ class ListRepository {
 
   async getListProduct(listId, populateProduct) {
     let products;
-    console.log(populateProduct);
     if (populateProduct) {
 
       products = await ListProductModel.find({ listId }).populate('productId').exec();
