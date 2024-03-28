@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bigOrderController = require('../controllers/bigOrderController');
 
+router.post('/export', bigOrderController.exportToExcel);
 router.post('/', bigOrderController.createBigOrder);
 router.put('/', bigOrderController.updateBigOrder);
 router.get('/', bigOrderController.getBigOrders);

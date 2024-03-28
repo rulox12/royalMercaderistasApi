@@ -1,9 +1,14 @@
-const CreateBigOrderUseCase = require('../../../application/useCases/bigOrder/createBigOrder');
-const GetOrdersByDateWithDetails = require('../../../application/useCases/order/getOrdersByDateWithDetails');
-const GetBigOrdersUseCase = require('../../../application/useCases/bigOrder/getBigOrders');
-const GetBigOrderUseCase = require('../../../application/useCases/bigOrder/getBigOrder');
-const getBigOrderByDateAndCity = require('../../../application/useCases/bigOrder/getBigOrderByDateAndCity');
-const UpdateBigOrderUserCase = require('../../../application/useCases/bigOrder/updateBigOrder');
+const CreateBigOrderUseCase = require("../../../application/useCases/bigOrder/createBigOrder");
+const GetOrdersByDateWithDetails = require("../../../application/useCases/order/getOrdersByDateWithDetails");
+const GetBigOrdersUseCase = require("../../../application/useCases/bigOrder/getBigOrders");
+const GetBigOrderUseCase = require("../../../application/useCases/bigOrder/getBigOrder");
+const getBigOrderByDateAndCity = require("../../../application/useCases/bigOrder/getBigOrderByDateAndCity");
+const UpdateBigOrderUserCase = require("../../../application/useCases/bigOrder/updateBigOrder");
+const ExcelJS = require("exceljs");
+const OrderModel = require("../../persistence/models/OrderModel");
+const OrderDetails = require("../../persistence/models/OrderDetailsModel");
+const BigOrderModel = require("../../persistence/models/BigOrderModel");
+const path = require('path');
 
 const bigOrderController = {
   createBigOrder: async (req, res) => {
@@ -25,8 +30,8 @@ const bigOrderController = {
 
       const bigOrder = await GetBigOrderUseCase.execute(bigOrderId);
       await UpdateBigOrderUserCase.execute(bigOrder, products, userId);
-      
-      res.status(201).json({message: 'Actualizado con exito'});
+
+      res.status(201).json({ message: "Actualizado con exito" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -74,6 +79,73 @@ const bigOrderController = {
       res.status(200).json(bigOrder);
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  },
+
+  exportToExcel: async (req, res) => {
+    try {
+      const bigOrder = await BigOrderModel.findById(req.body.bigOrderId);
+
+      const date = bigOrder.date;
+      const cityId = bigOrder.cityId;
+
+      const orders = await OrderModel.find({ date, cityId });
+
+      if (!orders.length) {
+        console.log(
+          "No se encontraron órdenes para la fecha y ciudad proporcionadas."
+        );
+        return;
+      }
+
+      const groupedDetails = {};
+
+      for (const order of orders) {
+        const orderDetails = await OrderDetails.find({
+          order: order._id,
+        }).populate("product");
+
+        for (const detail of orderDetails) {
+          const product = detail.product;
+          const supplierId = product.supplierId.toString();
+          const key = `${supplierId}_${product._id}`;
+          if (!groupedDetails[key]) {
+            groupedDetails[key] = {
+              supplier: product.supplierId,
+              product: product.name,
+              quantity: parseFloat(detail.PEDI_REAL),
+            };
+          } else {
+            groupedDetails[key].quantity += parseFloat(detail.PEDI_REAL);
+          }
+        }
+      }
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Order Details");
+
+      worksheet.columns = [
+        { header: "Proveedor", key: "supplier", width: 30 },
+        { header: "Producto", key: "product", width: 30 },
+        { header: "Cantidad", key: "quantity", width: 10 },
+      ];
+
+      for (const key in groupedDetails) {
+        if (groupedDetails.hasOwnProperty(key)) {
+          const detail = groupedDetails[key];
+          worksheet.addRow(detail);
+        }
+      }
+
+      const filePath = path.resolve(__dirname, "order_details.xlsx");
+      await workbook.xlsx.writeFile(filePath);
+      console.log(
+        `Los detalles de la orden se han exportado a Excel en ${filePath}.`
+      );
+
+      res.sendFile(filePath);
+    } catch (error) {
+      console.error("Error al exportar detalles de la orden a Excel:", error);
     }
   },
 };
