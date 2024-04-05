@@ -113,10 +113,10 @@ const bigOrderController = {
             groupedDetails[key] = {
               supplier: product.supplierId,
               product: product.name,
-              quantity: parseFloat(detail.PEDI_REAL),
+              quantity: detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0,
             };
           } else {
-            groupedDetails[key].quantity += parseFloat(detail.PEDI_REAL);
+            groupedDetails[key].quantity += detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL): 0;
           }
         }
       }
