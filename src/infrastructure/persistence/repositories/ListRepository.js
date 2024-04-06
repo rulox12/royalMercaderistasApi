@@ -76,7 +76,29 @@ class ListRepository {
 
       return details;
     } catch (error) {
-      throw new Error(`Error deleting product: ${error.message}`);
+      throw new Error(`Error deleting details: ${error.message}`);
+    }
+  }
+
+  async delete(listId) {
+    try {
+      const list = await ListModel.findByIdAndDelete(listId);
+      return list;
+
+    } catch (error) {
+      throw new Error(`Error while delete list: ${error.message}`);
+    }
+  }
+
+  async deleteDetailsByList(listId) {
+    try {
+      const details = await ListProductModel.deleteMany({
+        listId,
+      });
+
+      return details;
+    } catch (error) {
+      throw new Error(`Error deleting details: ${error.message}`);
     }
   }
 }

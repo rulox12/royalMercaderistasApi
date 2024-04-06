@@ -4,14 +4,17 @@ const ProductRepository = require('../../../infrastructure/persistence/repositor
 class DeleteProductUseCase {
   constructor(productRepository, listRepository) {
     this.productRepository = productRepository;
-    this.ListRepository = listRepository;
+    this.listRepository = listRepository;
   }
 
   async execute(id) {
-    const deleteProduct = await this.productRepository.delete(id);
-    const removeDetails = await this.listRepository.deleteDetailsByProduct(id)
-    console.log(removeDetails)  
-    return deleteProduct;
+    try {
+      const deleteProduct = await this.productRepository.delete(id);
+      this.listRepository.deleteDetailsByProduct(id)
+      return deleteProduct;
+    } catch (e) {
+      console.log('capturoelerror', e)
+    }
   }
 }
 

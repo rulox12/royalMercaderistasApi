@@ -3,6 +3,7 @@ const CreateListProductUseCase = require('../../../application/useCases/list/cre
 const GetListProductUseCase = require('../../../application/useCases/list/getListProduct');
 const GetListUseCase = require('../../../application/useCases/list/getList');
 const GetListsUseCase = require('../../../application/useCases/list/getLists');
+const DeleteListUseCase = require('../../../application/useCases/list/deleteList');
 
 const listController = {
   createList: async (req, res) => {
@@ -68,7 +69,16 @@ const listController = {
       console.error('Error al obtener lista de productos:', error);
       return res.status(500).json({ message: 'Error al obtener lista' });
     }
-  }
+  },
+
+  deleteList: async (req, res) => {
+    try {
+      const listDelete = await DeleteListUseCase.execute(req.body.listId);
+      res.status(200).json(listDelete);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
 
 
 };
