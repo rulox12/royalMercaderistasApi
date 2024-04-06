@@ -103,20 +103,24 @@ const bigOrderController = {
       for (const order of orders) {
         const orderDetails = await OrderDetails.find({
           order: order._id,
-        }).populate("product");
-
+        }).populate({
+          path: "product",
+          populate: {
+            path: "supplierId",
+          }
+        });
         for (const detail of orderDetails) {
           const product = detail.product;
-          const supplierId = product.supplierId.toString();
+          const supplierId = product.supplierId._id.toString();
           const key = `${supplierId}_${product._id}`;
           if (!groupedDetails[key]) {
             groupedDetails[key] = {
-              supplier: product.supplierId,
+              supplier: product.supplierId.name,
               product: product.name,
               quantity: detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0,
             };
           } else {
-            groupedDetails[key].quantity += detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL): 0;
+            groupedDetails[key].quantity += detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0;
           }
         }
       }
@@ -130,10 +134,22 @@ const bigOrderController = {
         { header: "Cantidad", key: "quantity", width: 10 },
       ];
 
+      const groupedData = {};
       for (const key in groupedDetails) {
-        if (groupedDetails.hasOwnProperty(key)) {
-          const detail = groupedDetails[key];
-          worksheet.addRow(detail);
+        const groupId = key.split("_")[0];
+        if (!groupedData[groupId]) {
+          groupedData[groupId] = [];
+        }
+        groupedData[groupId].push(groupedDetails[key]);
+      }
+
+      for (const key in groupedData) {
+        if (groupedData.hasOwnProperty(key)) {
+          const details = groupedData[key];
+          for (const detail of details) {
+            worksheet.addRow(detail);
+          }
+          worksheet.addRow({supplier: '', product: '', quantity: '' });
         }
       }
 
@@ -148,6 +164,8 @@ const bigOrderController = {
       console.error("Error al exportar detalles de la orden a Excel:", error);
     }
   },
+
+
 };
 
 module.exports = bigOrderController;
