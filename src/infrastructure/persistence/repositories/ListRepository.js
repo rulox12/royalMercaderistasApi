@@ -32,8 +32,9 @@ class ListRepository {
   async getListProduct(listId, populateProduct) {
     let products;
     if (populateProduct) {
-
-      products = await ListProductModel.find({ listId }).populate('productId').exec();
+      products = await ListProductModel.find({ listId })
+        .populate("productId")
+        .exec();
     } else {
       products = await ListProductModel.find({ listId }).exec();
     }
@@ -62,6 +63,18 @@ class ListRepository {
       });
 
       return deletedProduct;
+    } catch (error) {
+      throw new Error(`Error deleting product: ${error.message}`);
+    }
+  }
+
+  async deleteDetailsByProduct(productId) {
+    try {
+      const details = await ListProductModel.deleteMany({
+        productId,
+      });
+
+      return details;
     } catch (error) {
       throw new Error(`Error deleting product: ${error.message}`);
     }

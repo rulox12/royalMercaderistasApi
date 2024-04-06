@@ -23,7 +23,7 @@ const cityController = {
       const city = await GetCityUseCase.execute(cityId);
 
       if (!city) {
-        return res.status(404).json({ message: "Lista no encontrada" });
+        return res.status(404).json({ message: "Ciudad no encontrada" });
       }
 
       res.status(200).json(city);
