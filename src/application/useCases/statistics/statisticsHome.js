@@ -8,7 +8,7 @@ class StatisticsHome {
   async execute() {
     const totalSales = await this.statisticsRepository.totalSales();
     const totalBreakdowns = await this.statisticsRepository.totalBreakdowns();
-    const totalOrders = await this.statisticsRepository.totalBreakdowns();
+    const totalOrders = await this.statisticsRepository.totalOrders();
     const totalBigOrders = await this.statisticsRepository.totalBigOrders();
 
     return {
