@@ -1,21 +1,19 @@
 const OrderModel = require("../models/OrderModel");
-const mongoose = require('mongoose');
 
 class OrderRepository {
   async create(order) {
     const newOrder = new OrderModel(order);
     await newOrder.save();
-
-    return newOrder.toObject();
+    return newOrder;
   }
 
   async findById(orderId) {
-    return OrderModel.findById(orderId).exec();
+    return OrderModel.findById(orderId).populate('orderDetails.product').exec();
   }
 
   async getAll(filters) {
     try {
-      const orders = await OrderModel.find(filters).populate('shop');
+      const orders = await OrderModel.find(filters).populate('shop').populate('orderDetails.product');
       return orders;
     } catch (error) {
       throw new Error(`Error while fetching orders: ${error.message}`);
@@ -23,11 +21,7 @@ class OrderRepository {
   }
 
   async getOrderByDateAndShop(date, shop) {
-    if (!mongoose.Types.ObjectId.isValid(shop)) {
-      return null;
-    }
-
-    return OrderModel.findOne({ date, shop })
+    return OrderModel.findOne({ date, shop }).populate('orderDetails.product').exec();
   }
 
   async getOrdersByDate(date) {
@@ -41,7 +35,7 @@ class OrderRepository {
 
   async getOrdersByUser(userId) {
     try {
-      const orders = await OrderModel.find({userId});
+      const orders = await OrderModel.find({ date }).populate('orderDetails.product');
       return orders;
     } catch (error) {
       throw new Error(`Error while fetching orders: ${error.message}`);
@@ -50,7 +44,7 @@ class OrderRepository {
 
   async get(filters) {
     try {
-      const orders = await OrderModel.findOne(filters);
+      const orders = await OrderModel.findOne(filters).populate('orderDetails.product');;
       return orders;
     } catch (error) {
       throw new Error(`Error while fetching orders: ${error.message}`);
@@ -63,13 +57,22 @@ class OrderRepository {
         orderId,
         updatedFields,
         { new: true }
-      );
+      ).populate('orderDetails.product').exec();
 
       return updatedOrder;
     } catch (error) {
       throw new Error(`Error while updating order: ${error.message}`);
     }
   }
+  
+  async save(order) {
+    try {
+        const updatedOrder = await order.save();
+        return updatedOrder;
+    } catch (error) {
+        throw new Error(`Error while saving order: ${error.message}`);
+    }
+}
 }
 
 module.exports = OrderRepository;

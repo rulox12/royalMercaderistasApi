@@ -2,11 +2,10 @@ const CreateBigOrderUseCase = require("../../../application/useCases/bigOrder/cr
 const GetOrdersByDateWithDetails = require("../../../application/useCases/order/getOrdersByDateWithDetails");
 const GetBigOrdersUseCase = require("../../../application/useCases/bigOrder/getBigOrders");
 const GetBigOrderUseCase = require("../../../application/useCases/bigOrder/getBigOrder");
-const getBigOrderByDateAndCity = require("../../../application/useCases/bigOrder/getBigOrderByDateAndCity");
+const GetBigOrderByDateAndCity = require("../../../application/useCases/bigOrder/getBigOrderByDateAndCity");
 const UpdateBigOrderUserCase = require("../../../application/useCases/bigOrder/updateBigOrder");
 const ExcelJS = require("exceljs");
 const OrderModel = require("../../persistence/models/OrderModel");
-const OrderDetails = require("../../persistence/models/OrderDetailsModel");
 const BigOrderModel = require("../../persistence/models/BigOrderModel");
 const path = require('path');
 
@@ -55,7 +54,7 @@ const bigOrderController = {
     try {
       const { date, cityId } = req.query;
 
-      const bigOrders = await getBigOrderByDateAndCity.execute(date, cityId);
+      const bigOrders = await GetBigOrderByDateAndCity.execute(date, cityId);
 
       if (!bigOrders || bigOrders.length === 0) {
         return res.status(404).json({ message: "No se encontraron pedidos" });
@@ -89,7 +88,12 @@ const bigOrderController = {
       const date = bigOrder.date;
       const cityId = bigOrder.cityId;
 
-      const orders = await OrderModel.find({ date, cityId });
+      const orders = await OrderModel.find({ date, cityId }).populate({
+        path: 'orderDetails.product',
+        populate: {
+          path: 'supplierId'
+        }
+      });
 
       if (!orders.length) {
         console.log(
@@ -97,33 +101,7 @@ const bigOrderController = {
         );
         return;
       }
-
-      const groupedDetails = {};
-
-      for (const order of orders) {
-        const orderDetails = await OrderDetails.find({
-          order: order._id,
-        }).populate({
-          path: "product",
-          populate: {
-            path: "supplierId",
-          }
-        });
-        for (const detail of orderDetails) {
-          const product = detail.product;
-          const supplierId = product.supplierId._id.toString();
-          const key = `${supplierId}_${product._id}`;
-          if (!groupedDetails[key]) {
-            groupedDetails[key] = {
-              supplier: product.supplierId.name,
-              product: product.name,
-              quantity: detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0,
-            };
-          } else {
-            groupedDetails[key].quantity += detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0;
-          }
-        }
-      }
+      const groupedDetailsBySupplier = {};
 
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Order Details");
@@ -134,22 +112,29 @@ const bigOrderController = {
         { header: "Cantidad", key: "quantity", width: 10 },
       ];
 
-      const groupedData = {};
-      for (const key in groupedDetails) {
-        const groupId = key.split("_")[0];
-        if (!groupedData[groupId]) {
-          groupedData[groupId] = [];
+      for (const order of orders) {
+        for (const detail of order.orderDetails) {
+          console.log(detail);
+          const product = detail.product;
+          const supplier = product.supplierId.name;
+          const productName = product.name;
+          const quantity = detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0;
+          if (!groupedDetailsBySupplier[supplier]) {
+            groupedDetailsBySupplier[supplier] = [];
+          }
+          groupedDetailsBySupplier[supplier].push({ productName, quantity });
         }
-        groupedData[groupId].push(groupedDetails[key]);
       }
 
-      for (const key in groupedData) {
-        if (groupedData.hasOwnProperty(key)) {
-          const details = groupedData[key];
-          for (const detail of details) {
-            worksheet.addRow(detail);
-          }
-          worksheet.addRow({supplier: '', product: '', quantity: '' });
+      for (const supplier in groupedDetailsBySupplier) {
+        if (groupedDetailsBySupplier.hasOwnProperty(supplier)) {
+          const details = groupedDetailsBySupplier[supplier];
+          // Agregar los detalles del proveedor al archivo Excel
+          details.forEach(detail => {
+            worksheet.addRow({ supplier, product: detail.productName, quantity: detail.quantity });
+          });
+          // Agregar una fila en blanco como separador entre proveedores
+          worksheet.addRow({ supplier: '', product: '', quantity: '' });
         }
       }
 
@@ -164,7 +149,6 @@ const bigOrderController = {
       console.error("Error al exportar detalles de la orden a Excel:", error);
     }
   },
-
 
 };
 

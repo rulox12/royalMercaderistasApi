@@ -1,35 +1,30 @@
-const BigOrderRepository = require('../../../infrastructure/persistence/repositories/BigOrderRepository');
-const OrderDetailsRepository = require('../../../infrastructure/persistence/repositories/OrderDetailsRepository');
-const OrderRepository = require('../../../infrastructure/persistence/repositories/OrderRepository');
+const BigOrderRepository = require("../../../infrastructure/persistence/repositories/BigOrderRepository");
+const OrderRepository = require("../../../infrastructure/persistence/repositories/OrderRepository");
 
 class GetBigOrderByDateandCity {
-    constructor(bigOrderDetailsRepository, orderDetailsRepository, orderRepository) {
-        this.bigOrderDetailsRepository = bigOrderDetailsRepository;
-        this.orderDetailsRepository = orderDetailsRepository;
+    constructor(bigOrderRepository, orderRepository) {
+        this.bigOrderRepository = bigOrderRepository;
         this.orderRepository = orderRepository;
     }
 
     async execute(date, cityId) {
-        const bigOrder = await this.bigOrderDetailsRepository.find(date, cityId);
+        const bigOrder = await this.bigOrderRepository.find(date, cityId);
+
         if (!bigOrder) {
             throw new Error("No existe un pedido para la fecha y ciudad especifica");
         }
 
-        const orders = await this.orderRepository.getAll({date, cityId});
-
+        const orders = await this.orderRepository.getAll({ date, cityId });
 
         const ordersWithDetails = await Promise.all(
             orders.map(async (order) => {
-                const details = await this.orderDetailsRepository.findByOrderId(order._id);
+                const details = order.orderDetails;
                 return { order, details };
             })
         );
+
         return ordersWithDetails;
     }
 }
 
-module.exports = new GetBigOrderByDateandCity(
-    new BigOrderRepository(),
-    new OrderDetailsRepository(),
-    new OrderRepository()
-);
+module.exports = new GetBigOrderByDateandCity(new BigOrderRepository(), new OrderRepository);

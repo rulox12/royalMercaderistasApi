@@ -25,6 +25,20 @@ const OrderScheme = new Schema({
     type: String,
     required: true,
   },
+  orderDetails: [{
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    INVE: String,
+    AVER: String,
+    LOTE: String,
+    RECI: String,
+    PEDI: String,
+    VENT: String,
+    PEDI_REAL: String,
+  }],
 });
 
 const OrderModel = mongoose.model('Order', OrderScheme);

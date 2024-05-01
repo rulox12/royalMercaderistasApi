@@ -5,8 +5,8 @@ class UpdateOrderUseCase {
     this.orderRepository = orderRepository;
   }
 
-  async execute(orderId, shopId, status) {
-    return this.orderRepository.update(orderId, shopId, status);
+  async execute(orderId, updatedFields) {
+    return this.orderRepository.update(orderId, updatedFields);
   }
 }
 

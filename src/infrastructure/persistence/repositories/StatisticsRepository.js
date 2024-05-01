@@ -1,49 +1,44 @@
-const BigOrderModel = require("../models/BigOrderModel");
-const OrderDetailModel = require("../models/OrderDetailsModel");
 const OrderModel = require("../models/OrderModel");
 
 class StatisticsRepository {
   async totalSales() {
-    const orderDetails = await OrderDetailModel.find({ VENT: { $exists: true, $ne: '' } }).populate('product').populate({
-      path: "order",
-      populate: {
-        path: "shop",
-      }
-    });
-
     let total = 0;
-
-    orderDetails.forEach(detail => {
-      total += parseInt(detail.VENT);
-    });
+    const orders = await OrderModel.find();
+    
+    for (const order of orders) {
+      for (const detail of order.orderDetails) {
+        if (detail.VENT && detail.VENT !== '') {
+          total += parseInt(detail.VENT);
+        }
+      }
+    }
 
     return total;
   }
 
   async totalBreakdowns() {
-    const orderDetails = await OrderDetailModel.find({ AVER: { $exists: true, $ne: '' } }).populate('product').populate({
-      path: "order",
-      populate: {
-        path: "shop",
-      }
-    });
-
     let total = 0;
-
-    orderDetails.forEach(detail => {
-      total += parseInt(detail.AVER);
-    });
+    const orders = await OrderModel.find();
+    
+    for (const order of orders) {
+      for (const detail of order.orderDetails) {
+        if (detail.AVER && detail.AVER !== '') {
+          total += parseInt(detail.AVER);
+        }
+      }
+    }
 
     return total;
   }
 
   async totalOrders(){
-    const total = await OrderModel.countDocuments()
+    const total = await OrderModel.countDocuments();
     return total;
   }
 
   async totalBigOrders(){
-    const total = await BigOrderModel.countDocuments()
+    // No se necesita el modelo BigOrderModel en este caso
+    const total = await OrderModel.countDocuments();
     return total;
   }
 }

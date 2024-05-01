@@ -1,9 +1,7 @@
-const OrderDetailsRepository = require('../../../infrastructure/persistence/repositories/OrderDetailsRepository');
 const OrderRepository = require('../../../infrastructure/persistence/repositories/OrderRepository');
 
 class GetOrdersByDateWithDetailsUseCase {
-    constructor(orderDetailsRepository, orderRepository) {
-        this.orderDetailsRepository = orderDetailsRepository;
+    constructor(orderRepository) {
         this.orderRepository = orderRepository;
     }
 
@@ -11,12 +9,12 @@ class GetOrdersByDateWithDetailsUseCase {
         const orders = await this.orderRepository.getAll({date, cityId});
         const ordersWithDetails = await Promise.all(
             orders.map(async (order) => {
-                const details = await this.orderDetailsRepository.findByOrderId(order._id);
-                return { order, details };
+                return { order, details: order.orderDetails };
             })
         );
+
         return ordersWithDetails;
     }
 }
 
-module.exports = new GetOrdersByDateWithDetailsUseCase(new OrderDetailsRepository(), new OrderRepository());
+module.exports = new GetOrdersByDateWithDetailsUseCase(new OrderRepository());

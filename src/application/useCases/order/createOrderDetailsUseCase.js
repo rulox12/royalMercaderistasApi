@@ -1,16 +1,22 @@
-const OrderDetailsRepository = require('../../../infrastructure/persistence/repositories/OrderDetailsRepository');
+const OrderRepository = require('../../../infrastructure/persistence/repositories/OrderRepository');
 
 class CreateOrderDetailsUseCase {
-    constructor(orderDetailsRepository) {
-        this.orderDetailsRepository = orderDetailsRepository;
+    constructor(orderRepository) {
+        this.orderRepository = orderRepository;
     }
 
     async execute(orderId, productsByDate) {
+        const order = await this.orderRepository.findById(orderId);
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
         const orderDetails = [];
 
         for (const productId in productsByDate) {
             const product = productsByDate[productId];
-            const existingDetail = await this.orderDetailsRepository.findByOrderIdAndProductId(orderId, productId);
+            const existingDetailIndex = order.orderDetails.findIndex(detail => detail.product.equals(productId));
 
             const { INVE, AVER, LOTE, RECI, PEDI, VENT } = product;
 
@@ -22,21 +28,29 @@ class CreateOrderDetailsUseCase {
                 RECI,
                 PEDI,
                 VENT,
-                order: orderId,
             };
-            
-            if (existingDetail) {
-                const updatedOrderDetail = await this.orderDetailsRepository.update(existingDetail._id, orderDetail);
-                orderDetails.push(updatedOrderDetail);
+
+            if (existingDetailIndex !== -1) {
+                const existingDetail = order.orderDetails[existingDetailIndex];
+                existingDetail.INVE = INVE;
+                existingDetail.AVER = AVER;
+                existingDetail.LOTE = LOTE;
+                existingDetail.RECI = RECI;
+                existingDetail.PEDI = PEDI;
+                existingDetail.VENT = VENT;
+                existingDetail.PEDI_REAL = PEDI;
+                order.orderDetails[existingDetailIndex] = existingDetail;
+                orderDetails.push(existingDetail);
             } else {
-                orderDetail['PEDI_REAL'] = PEDI;
-                const createdOrderDetail = await this.orderDetailsRepository.create(orderDetail);
-                orderDetails.push(createdOrderDetail);
+                orderDetail.PEDI_REAL = PEDI;
+                order.orderDetails.push(orderDetail);
+                orderDetails.push(orderDetail);
             }
         }
+        await order.save();
 
         return orderDetails;
     }
 }
 
-module.exports = new CreateOrderDetailsUseCase(new OrderDetailsRepository());
+module.exports = new CreateOrderDetailsUseCase(new OrderRepository());

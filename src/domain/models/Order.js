@@ -1,11 +1,12 @@
 class Order {
-  constructor(id, date, shopId, status, user, cityId) {
-    this.id = id
-    this.date = date
-    this.shop = shopId
-    this.status = status
-    this.user = user
-    this.cityId = cityId
+  constructor(id, date, shop, status, user, cityId, orderDetails) {
+    this.id = id;
+    this.date = date;
+    this.shop = shop;
+    this.status = status;
+    this.user = user;
+    this.cityId = cityId;
+    this.orderDetails = orderDetails || [];
   }
 }
 
