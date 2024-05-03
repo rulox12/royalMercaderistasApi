@@ -6,14 +6,24 @@ class ExportGenericUseCase {
   }
 
   async execute(startDate, endDate, orderDetailToExport, city) {
-    const filters = {
-      date: {
-        $gte: startDate,
-        $lte: endDate
-      },
-      cityId: city
+    let filters = {};
+    if (city != "123") {
+      filters = {
+        date: {
+          $gte: startDate,
+          $lte: endDate
+        },
+        cityId: city
+      }
+    } else {
+      filters = {
+        date: {
+          $gte: startDate,
+          $lte: endDate
+        }
+      }
     }
-    
+
     const orders = await this.orderRepository.getAll(filters)
 
     const groupedDetailsByProduct = {};
