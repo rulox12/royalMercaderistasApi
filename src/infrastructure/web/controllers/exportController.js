@@ -9,7 +9,7 @@ const exportController = {
       
       // Ejecutar el caso de uso para obtener los datos a exportar
       const data = await ExportGenericUseCase.execute(startDate, endDate, orderDetailToExport, city);
-      
+      console.log(data);
       // Crear un nuevo libro de Excel
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Exported Data");
@@ -24,6 +24,7 @@ const exportController = {
       data.forEach(item => {
         worksheet.addRow({ productName: item.productName, valueToExport: item.totalValue });
       });
+
       const filePath = path.resolve(__dirname, "order_details.xlsx");
       await workbook.xlsx.writeFile(filePath);
       console.log(

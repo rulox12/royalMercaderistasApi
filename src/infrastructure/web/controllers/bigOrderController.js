@@ -114,15 +114,19 @@ const bigOrderController = {
 
       for (const order of orders) {
         for (const detail of order.orderDetails) {
-          console.log(detail);
           const product = detail.product;
           const supplier = product.supplierId.name;
           const productName = product.name;
           const quantity = detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0;
           if (!groupedDetailsBySupplier[supplier]) {
-            groupedDetailsBySupplier[supplier] = [];
+            groupedDetailsBySupplier[supplier] = {};
           }
-          groupedDetailsBySupplier[supplier].push({ productName, quantity });
+
+          if (!groupedDetailsBySupplier[supplier][productName]) {
+            groupedDetailsBySupplier[supplier][productName] = 0;
+          }
+
+          groupedDetailsBySupplier[supplier][productName] += quantity;
         }
       }
 
@@ -130,9 +134,12 @@ const bigOrderController = {
         if (groupedDetailsBySupplier.hasOwnProperty(supplier)) {
           const details = groupedDetailsBySupplier[supplier];
           // Agregar los detalles del proveedor al archivo Excel
-          details.forEach(detail => {
-            worksheet.addRow({ supplier, product: detail.productName, quantity: detail.quantity });
-          });
+          for (const productName in details) {
+            if (details.hasOwnProperty(productName)) {
+              const quantity = details[productName];
+              worksheet.addRow({ supplier, product: productName, quantity });
+            }
+          }
           // Agregar una fila en blanco como separador entre proveedores
           worksheet.addRow({ supplier: '', product: '', quantity: '' });
         }
