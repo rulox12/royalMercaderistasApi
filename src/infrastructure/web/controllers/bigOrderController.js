@@ -84,11 +84,18 @@ const bigOrderController = {
   exportToExcel: async (req, res) => {
     try {
       const bigOrder = await BigOrderModel.findById(req.body.bigOrderId);
-
       const date = bigOrder.date;
       const cityId = bigOrder.cityId;
+      const startDate = new Date(date);
 
-      const orders = await OrderModel.find({ date, cityId }).populate({
+      startDate.setUTCHours(0, 0, 0, 0);
+      const endDate = new Date(startDate);
+      endDate.setUTCDate(startDate.getUTCDate() + 1);
+
+      const orders = await OrderModel.find({
+        date: { $gte: startDate, $lt: endDate },
+        cityId: cityId
+      }).populate({
         path: 'orderDetails.product',
         populate: {
           path: 'supplierId'
