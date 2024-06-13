@@ -45,6 +45,10 @@ class ExportGenericUseCase {
 
             const groupedDetailsByProduct = {};
 
+            if (orderDetailToExport === 'PEDI') {
+                orderDetailToExport = 'PEDI_REAL';
+            }
+
             orders.forEach(order => {
                 order.orderDetails.forEach(detail => {
                     const productName = detail.product.name;
@@ -60,7 +64,10 @@ class ExportGenericUseCase {
             for (const productName in groupedDetailsByProduct) {
                 if (groupedDetailsByProduct.hasOwnProperty(productName)) {
                     const values = groupedDetailsByProduct[productName];
-                    const totalValue = values.reduce((acc, curr) => acc + parseFloat(curr), 0);
+                    const totalValue = values
+                        .filter(value => value.trim() !== '')
+                        .reduce((acc, curr) => acc + parseFloat(curr), 0);
+
                     dataToExport.push({ productName, totalValue });
                 }
             }
@@ -69,12 +76,12 @@ class ExportGenericUseCase {
             const worksheet = workbook.addWorksheet("Exported Data");
 
             worksheet.columns = [
-                { header: "Producto", key: "productName", width: 30 },
-                { header: "Valor a Exportar", key: "valueToExport", width: 20 },
+                {header: "Producto", key: "productName", width: 30},
+                {header: "Valor a Exportar", key: "valueToExport", width: 20},
             ];
 
             dataToExport.forEach((item) => {
-                worksheet.addRow({ productName: item.productName, valueToExport: item.totalValue });
+                worksheet.addRow({productName: item.productName, valueToExport: item.totalValue});
             });
 
             const filePath = path.resolve(__dirname, "order_details.xlsx");

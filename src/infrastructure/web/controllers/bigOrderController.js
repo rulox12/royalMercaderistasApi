@@ -108,6 +108,7 @@ const bigOrderController = {
         );
         return;
       }
+
       const groupedDetailsBySupplier = {};
 
       const workbook = new ExcelJS.Workbook();
