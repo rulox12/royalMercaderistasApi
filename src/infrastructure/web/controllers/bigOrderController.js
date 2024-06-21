@@ -100,7 +100,7 @@ const bigOrderController = {
         populate: {
           path: 'supplierId'
         }
-      });
+      }).populate('cityId');
 
       if (!orders.length) {
         console.log(
@@ -118,10 +118,13 @@ const bigOrderController = {
         { header: "Proveedor", key: "supplier", width: 30 },
         { header: "Producto", key: "product", width: 30 },
         { header: "Cantidad", key: "quantity", width: 10 },
+        { header: "Ciudad", key: "city", width: 10 },
       ];
 
+      let cityName = '';
       for (const order of orders) {
         for (const detail of order.orderDetails) {
+          cityName = order.cityId.name;
           const product = detail.product;
           const supplier = product.supplierId.name;
           const productName = product.name;
@@ -145,11 +148,11 @@ const bigOrderController = {
           for (const productName in details) {
             if (details.hasOwnProperty(productName)) {
               const quantity = details[productName];
-              worksheet.addRow({ supplier, product: productName, quantity });
+              worksheet.addRow({ supplier, product: productName, quantity, cityName  });
             }
           }
           // Agregar una fila en blanco como separador entre proveedores
-          worksheet.addRow({ supplier: '', product: '', quantity: '' });
+          worksheet.addRow({ supplier: '', product: '', quantity: '', city: '' });
         }
       }
 
