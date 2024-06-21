@@ -91,7 +91,6 @@ const bigOrderController = {
       startDate.setUTCHours(0, 0, 0, 0);
       const endDate = new Date(startDate);
       endDate.setUTCDate(startDate.getUTCDate() + 1);
-
       const orders = await OrderModel.find({
         date: { $gte: startDate, $lt: endDate },
         cityId: cityId
@@ -121,10 +120,9 @@ const bigOrderController = {
         { header: "Ciudad", key: "city", width: 10 },
       ];
 
-      let cityName = '';
+      let cityName = orders[0].cityId.name;
       for (const order of orders) {
         for (const detail of order.orderDetails) {
-          cityName = order.cityId.name;
           const product = detail.product;
           const supplier = product.supplierId.name;
           const productName = product.name;
@@ -144,14 +142,12 @@ const bigOrderController = {
       for (const supplier in groupedDetailsBySupplier) {
         if (groupedDetailsBySupplier.hasOwnProperty(supplier)) {
           const details = groupedDetailsBySupplier[supplier];
-          // Agregar los detalles del proveedor al archivo Excel
           for (const productName in details) {
             if (details.hasOwnProperty(productName)) {
               const quantity = details[productName];
-              worksheet.addRow({ supplier, product: productName, quantity, cityName  });
+              worksheet.addRow({ supplier, product: productName, quantity, city: cityName});
             }
           }
-          // Agregar una fila en blanco como separador entre proveedores
           worksheet.addRow({ supplier: '', product: '', quantity: '', city: '' });
         }
       }
