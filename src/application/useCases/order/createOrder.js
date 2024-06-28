@@ -7,7 +7,7 @@ class CreateOrderUseCase {
   }
 
   async execute(shopId, date, userId, cityId) {
-    const newOrder = new Order(null, date, shopId, "Pending", userId, cityId, []);
+    const newOrder = new Order(null, formatDateForDatabase(date), shopId, "Pending", userId, cityId, []);
     const existOrder = await this.orderRepository.getOrderByDateAndShop(date, shopId);
 
     if (existOrder) {
@@ -17,6 +17,11 @@ class CreateOrderUseCase {
       return createdOrder;
     }
   }
+}
+
+function formatDateForDatabase(isoDateString) {
+  const date = new Date(isoDateString);
+  return date.toISOString();
 }
 
 module.exports = new CreateOrderUseCase(new OrderRepository());

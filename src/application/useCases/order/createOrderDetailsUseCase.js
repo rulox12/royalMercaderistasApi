@@ -47,6 +47,7 @@ class CreateOrderDetailsUseCase {
                 orderDetails.push(orderDetail);
             }
         }
+
         await order.save();
 
         return orderDetails;
