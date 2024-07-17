@@ -13,7 +13,8 @@ class OrderRepository {
 
   async getAll(filters) {
     try {
-      const orders = await OrderModel.find(filters).sort({ date: -1 }).limit(50).populate('shop').populate('orderDetails.product');
+      const orders = await OrderModel.find(filters).sort({ date: -1 }).limit(50)
+          .populate('cityId').populate('shop').populate('orderDetails.product');
       return orders;
     } catch (error) {
       throw new Error(`Error while fetching orders: ${error.message}`);
