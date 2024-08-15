@@ -6,8 +6,8 @@ class CreateOrderUseCase {
     this.orderRepository = orderRepository
   }
 
-  async execute(shopId, date, userId, cityId) {
-    const newOrder = new Order(null, formatDateForDatabase(date), shopId, "Pending", userId, cityId, []);
+  async execute(shopId, date, userId, cityId, platformId) {
+    const newOrder = new Order(null, formatDateForDatabase(date), shopId, "Pending", userId, cityId, platformId,[]);
     const existOrder = await this.orderRepository.getOrderByDateAndShop(date, shopId);
 
     if (existOrder) {

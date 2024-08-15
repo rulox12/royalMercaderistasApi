@@ -13,12 +13,12 @@ class BigOrderRepository {
     return BigOrderModel.findById(orderId).exec();
   }
 
-  async findByDate(date, cityId) {
-    return BigOrderModel.findOne({ date, cityId }).exec();
+  async findByDate(date, cityId, platformId) {
+    return BigOrderModel.findOne({ date, cityId, platformId }).exec();
   }
 
-  async find(date, cityId) {
-    return BigOrderModel.findOne({ date, cityId }).exec();
+  async find(filters) {
+    return BigOrderModel.findOne(filters).exec();
   }
 
   async getAll() {

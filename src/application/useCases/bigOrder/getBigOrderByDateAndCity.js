@@ -1,30 +1,29 @@
 const BigOrderRepository = require("../../../infrastructure/persistence/repositories/BigOrderRepository");
 const OrderRepository = require("../../../infrastructure/persistence/repositories/OrderRepository");
 
-class GetBigOrderByDateandCity {
+class GetBigOrderByDateAndCity {
     constructor(bigOrderRepository, orderRepository) {
         this.bigOrderRepository = bigOrderRepository;
         this.orderRepository = orderRepository;
     }
 
-    async execute(date, cityId) {
-        const bigOrder = await this.bigOrderRepository.find(date, cityId);
-
+    async execute(date, cityId, platformId) {
+        const query = { date, cityId, ...(platformId && { platformId }) };
+        console.log(query);
+        const bigOrder = await this.bigOrderRepository.find(query);
         if (!bigOrder) {
             throw new Error("No existe un pedido para la fecha y ciudad especifica");
         }
 
-        const orders = await this.orderRepository.getAll({ date, cityId });
+        const orders = await this.orderRepository.getAll(query);
 
-        const ordersWithDetails = await Promise.all(
-            orders.map(async (order) => {
+        return await Promise.all(
+            orders.orders.map(async (order) => {
                 const details = order.orderDetails;
-                return { order, details };
+                return {order, details};
             })
         );
-
-        return ordersWithDetails;
     }
 }
 
-module.exports = new GetBigOrderByDateandCity(new BigOrderRepository(), new OrderRepository);
+module.exports = new GetBigOrderByDateAndCity(new BigOrderRepository(), new OrderRepository());

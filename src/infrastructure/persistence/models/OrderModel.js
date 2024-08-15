@@ -25,6 +25,11 @@ const OrderSchema = new Schema({
     type: String,
     required: true,
   },
+  platform: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Platform",
+    required: true,
+  },
   orderDetails: [{
     product: {
       type: mongoose.Schema.Types.ObjectId,

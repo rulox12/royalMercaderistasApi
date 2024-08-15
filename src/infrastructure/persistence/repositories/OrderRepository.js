@@ -11,11 +11,24 @@ class OrderRepository {
     return OrderModel.findById(orderId).populate('orderDetails.product').exec();
   }
 
-  async getAll(filters) {
+  async getAll(filters, page = 1, limit = 50) {
     try {
-      const orders = await OrderModel.find(filters).sort({ date: -1 }).limit(50)
-          .populate('cityId').populate('shop').populate('orderDetails.product');
-      return orders;
+      const skip = (page - 1) * limit;
+      const orders = await OrderModel.find(filters)
+          .sort({ date: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('cityId')
+          .populate('shop')
+          .populate('orderDetails.product');
+
+      const totalOrders = await OrderModel.countDocuments(filters);
+      return {
+        orders,
+        totalOrders,
+        totalPages: Math.ceil(totalOrders / limit),
+        currentPage: page,
+      };
     } catch (error) {
       throw new Error(`Error while fetching orders: ${error.message}`);
     }

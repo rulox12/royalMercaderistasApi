@@ -19,7 +19,7 @@ const bigOrderController = {
 
       res.status(201).json({ createdBigOrder, orders });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ errors: error.message });
     }
   },
 
@@ -52,9 +52,9 @@ const bigOrderController = {
 
   getBigOrderByDateAndShop: async (req, res) => {
     try {
-      const { date, cityId } = req.query;
+      const { date, cityId, platformId } = req.query;
 
-      const bigOrders = await GetBigOrderByDateAndCity.execute(date, cityId);
+      const bigOrders = await GetBigOrderByDateAndCity.execute(date, cityId, platformId);
 
       if (!bigOrders || bigOrders.length === 0) {
         return res.status(404).json({ message: "No se encontraron pedidos" });
