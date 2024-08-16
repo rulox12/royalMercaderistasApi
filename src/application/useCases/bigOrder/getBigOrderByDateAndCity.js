@@ -9,7 +9,7 @@ class GetBigOrderByDateAndCity {
 
     async execute(date, cityId, platformId) {
         const query = { date, cityId, ...(platformId && { platformId }) };
-        console.log(query);
+
         const bigOrder = await this.bigOrderRepository.find(query);
         if (!bigOrder) {
             throw new Error("No existe un pedido para la fecha y ciudad especifica");
