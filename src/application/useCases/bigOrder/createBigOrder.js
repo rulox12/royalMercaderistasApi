@@ -12,7 +12,7 @@ class CreateBigOrderUseCase {
         if (existBigOrder) {
             throw new Error("Ya existe un pedido generado");
         } else {
-            const newBigOrder = new BigOrder(null, date, cityId);
+            const newBigOrder = new BigOrder(null, date, cityId, platformId);
             return this.bigOrderRepository.create(newBigOrder);
         }
     }

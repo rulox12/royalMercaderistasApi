@@ -12,10 +12,10 @@ const path = require('path');
 const bigOrderController = {
   createBigOrder: async (req, res) => {
     try {
-      const { date, cityId } = req.body;
+      const { date, cityId, platformId } = req.body;
 
-      const createdBigOrder = await CreateBigOrderUseCase.execute(date, cityId);
-      const orders = await GetOrdersByDateWithDetails.execute(date, cityId);
+      const createdBigOrder = await CreateBigOrderUseCase.execute(date, cityId, platformId);
+      const orders = await GetOrdersByDateWithDetails.execute(date, cityId, platformId);
 
       res.status(201).json({ createdBigOrder, orders });
     } catch (error) {

@@ -2,11 +2,11 @@ const BigOrderModel = require("../models/BigOrderModel");
 const mongoose = require('mongoose');
 
 class BigOrderRepository {
-  async create(order) {
-    const newOrder = new BigOrderModel(order);
-    await newOrder.save();
+  async create(bigOrder) {
+    const newBigOrder = new BigOrderModel(bigOrder);
+    await newBigOrder.save();
 
-    return newOrder.toObject();
+    return newBigOrder.toObject();
   }
 
   async findById(orderId) {
@@ -23,7 +23,7 @@ class BigOrderRepository {
 
   async getAll() {
     try {
-      const bigOrders = await BigOrderModel.find().populate('cityId');
+      const bigOrders = await BigOrderModel.find().populate('cityId').populate('platformId');
       return bigOrders;
     } catch (error) {
       throw new Error(`Error while fetching big orders: ${error.message}`);

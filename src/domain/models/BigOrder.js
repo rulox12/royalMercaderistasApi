@@ -4,7 +4,7 @@ class BigOrder {
     this.date = date
     this.cityId = cityId
     this.status = 'Pending'
-    this.platform = platformId;
+    this.platformId = platformId;
   }
 }
 
