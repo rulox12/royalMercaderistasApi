@@ -88,7 +88,6 @@ const exportController = {
 
             // Crear cabeceras para las tiendas y fechas
             let currentDate = new Date(startDateObj);
-            const dates = [];
 
             // Array para almacenar las posiciones de las columnas de "AVERIA"
             let averiaColumns = [];
@@ -97,6 +96,8 @@ const exportController = {
 
             // Construir las filas del Excel para cada tienda
             for (const shop of shops) {
+                const dates = [];
+
                 worksheet.addRow([`Tienda: ${shop.name}`]); // Primera fila con el nombre del local
                 worksheet.addRow([`De: ${startDate} a ${endDate}`]); // Segunda fila con el rango de fechas
 
@@ -172,7 +173,6 @@ const exportController = {
 
                 for (const listProduct of listProducts) {
                     const row = [listProduct.productId.name]; // Descripción del producto
-
                     for (let i = 0; i < dates.length; i++) {
                         const date = dates[i];
                         let totalINVE = 0;
@@ -187,7 +187,6 @@ const exportController = {
                         const order = shopOrders ? shopOrders.get(date) : null;
 
                         const orderDetail = order ? order.orderDetails.find(detail => detail.product._id.toString() === listProduct.productId._id.toString()) : null;
-
                         if (orderDetail) {
                             totalINVE = parseInt(orderDetail.INVE) || 0;
                             totalAVER = parseInt(orderDetail.AVER) || 0;
