@@ -49,7 +49,7 @@ class ExportGenericUseCase {
                 orderDetailToExport = 'PEDI_REAL';
             }
 
-            orders.forEach(order => {
+            orders.orders.forEach(order => {
                 order.orderDetails.forEach(detail => {
                     const productName = detail.product.name;
                     const valueToExport = detail[orderDetailToExport];

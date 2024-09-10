@@ -14,7 +14,11 @@ const BigOrderSchema = new Schema({
         type: String,
         ref: "City",
         required: true
-    }
+    },
+    platformId: {
+        type: String,
+        ref: "Platform",
+    },
 });
 
 BigOrderSchema.pre('findOne', function(next) {

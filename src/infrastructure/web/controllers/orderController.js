@@ -8,11 +8,11 @@ const getOrdersByDateWithDetails = require('../../../application/useCases/order/
 const orderController = {
   createOrder: async (req, res) => {
     try {
-      const { shopId, userId, orders, cityId } = req.body;
+      const { shopId, userId, orders, cityId, platformId } = req.body;
       const createdOrders = [];
       for (const orderDate in orders) {
         const products = orders[orderDate];
-        const createdOrder = await CreateOrderUseCase.execute(shopId, orderDate, userId, cityId);
+        const createdOrder = await CreateOrderUseCase.execute(shopId, orderDate, userId, cityId, platformId);
         const createdOrderDetails = await CreateOrderDetailsUseCase.execute(createdOrder._id, products);
         createdOrders.push({ order: createdOrder, orderDetails: createdOrderDetails });
       }
@@ -40,14 +40,14 @@ const orderController = {
 
   getOrders: async (req, res) => {
     try {
-      const filters = req.query;
-      const orders = await GetOrdersUseCase.execute(filters);
+      const { page = 1, limit = 50, ...filters } = req.query;
+      const ordersData = await GetOrdersUseCase.execute(filters, parseInt(page), parseInt(limit));
 
-      if (!orders || orders.length === 0) {
-        return res.status(404).json({ message: "No se encontraron ordenes" });
+      if (!ordersData.orders || ordersData.orders.length === 0) {
+        return res.status(404).json({ message: "No se encontraron órdenes" });
       }
 
-      res.status(200).json(orders);
+      res.status(200).json(ordersData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

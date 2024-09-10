@@ -10,159 +10,162 @@ const BigOrderModel = require("../../persistence/models/BigOrderModel");
 const path = require('path');
 
 const bigOrderController = {
-  createBigOrder: async (req, res) => {
-    try {
-      const { date, cityId } = req.body;
+    createBigOrder: async (req, res) => {
+        try {
+            const {date, cityId, platformId} = req.body;
 
-      const createdBigOrder = await CreateBigOrderUseCase.execute(date, cityId);
-      const orders = await GetOrdersByDateWithDetails.execute(date, cityId);
+            const createdBigOrder = await CreateBigOrderUseCase.execute(date, cityId, platformId);
+            const orders = await GetOrdersByDateWithDetails.execute(date, cityId, platformId);
 
-      res.status(201).json({ createdBigOrder, orders });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  updateBigOrder: async (req, res) => {
-    try {
-      const { bigOrderId, products, userId } = req.body;
-
-      const bigOrder = await GetBigOrderUseCase.execute(bigOrderId);
-      await UpdateBigOrderUserCase.execute(bigOrder, products, userId);
-
-      res.status(201).json({ message: "Actualizado con exito" });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  getBigOrders: async (req, res) => {
-    try {
-      const bigOrders = await GetBigOrdersUseCase.execute();
-
-      if (!bigOrders || bigOrders.length === 0) {
-        return res.status(404).json({ message: "No se encontraron pedidos" });
-      }
-
-      res.status(200).json(bigOrders);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  getBigOrderByDateAndShop: async (req, res) => {
-    try {
-      const { date, cityId } = req.query;
-
-      const bigOrders = await GetBigOrderByDateAndCity.execute(date, cityId);
-
-      if (!bigOrders || bigOrders.length === 0) {
-        return res.status(404).json({ message: "No se encontraron pedidos" });
-      }
-
-      res.status(200).json(bigOrders);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  getBigOrder: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const bigOrder = await GetBigOrderUseCase.execute(id);
-
-      if (!bigOrder || bigOrder.length === 0) {
-        return res.status(404).json({ message: "No se encontraron pedidos" });
-      }
-
-      res.status(200).json(bigOrder);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  exportToExcel: async (req, res) => {
-    try {
-      const bigOrder = await BigOrderModel.findById(req.body.bigOrderId);
-      const date = bigOrder.date;
-      const cityId = bigOrder.cityId;
-      const startDate = new Date(date);
-
-      startDate.setUTCHours(0, 0, 0, 0);
-      const endDate = new Date(startDate);
-      endDate.setUTCDate(startDate.getUTCDate() + 1);
-      const orders = await OrderModel.find({
-        date: { $gte: startDate, $lt: endDate },
-        cityId: cityId
-      }).populate({
-        path: 'orderDetails.product',
-        populate: {
-          path: 'supplierId'
+            res.status(201).json({createdBigOrder, orders});
+        } catch (error) {
+            res.status(500).json({errors: error.message});
         }
-      }).populate('cityId');
+    },
 
-      if (!orders.length) {
-        console.log(
-          "No se encontraron órdenes para la fecha y ciudad proporcionadas."
-        );
-        return;
-      }
+    updateBigOrder: async (req, res) => {
+        try {
+            const {bigOrderId, products, userId} = req.body;
 
-      const groupedDetailsBySupplier = {};
+            const bigOrder = await GetBigOrderUseCase.execute(bigOrderId);
+            await UpdateBigOrderUserCase.execute(bigOrder, products, userId);
 
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet("Order Details");
-
-      worksheet.columns = [
-        { header: "Proveedor", key: "supplier", width: 30 },
-        { header: "Producto", key: "product", width: 30 },
-        { header: "Cantidad", key: "quantity", width: 10 },
-        { header: "Ciudad", key: "city", width: 10 },
-      ];
-
-      let cityName = orders[0].cityId.name;
-      for (const order of orders) {
-        for (const detail of order.orderDetails) {
-          const product = detail.product;
-          const supplier = product.supplierId.name;
-          const productName = product.name;
-          const quantity = detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0;
-          if (!groupedDetailsBySupplier[supplier]) {
-            groupedDetailsBySupplier[supplier] = {};
-          }
-
-          if (!groupedDetailsBySupplier[supplier][productName]) {
-            groupedDetailsBySupplier[supplier][productName] = 0;
-          }
-
-          groupedDetailsBySupplier[supplier][productName] += quantity;
+            res.status(201).json({message: "Actualizado con exito"});
+        } catch (error) {
+            res.status(500).json({error: error.message});
         }
-      }
+    },
 
-      for (const supplier in groupedDetailsBySupplier) {
-        if (groupedDetailsBySupplier.hasOwnProperty(supplier)) {
-          const details = groupedDetailsBySupplier[supplier];
-          for (const productName in details) {
-            if (details.hasOwnProperty(productName)) {
-              const quantity = details[productName];
-              worksheet.addRow({ supplier, product: productName, quantity, city: cityName});
+    getBigOrders: async (req, res) => {
+        try {
+            const bigOrders = await GetBigOrdersUseCase.execute();
+
+            if (!bigOrders || bigOrders.length === 0) {
+                return res.status(404).json({message: "No se encontraron pedidos"});
             }
-          }
-          worksheet.addRow({ supplier: '', product: '', quantity: '', city: '' });
+
+            res.status(200).json(bigOrders);
+        } catch (error) {
+            res.status(500).json({error: error.message});
         }
-      }
+    },
 
-      const filePath = path.resolve(__dirname, "order_details.xlsx");
-      await workbook.xlsx.writeFile(filePath);
-      console.log(
-        `Los detalles de la orden se han exportado a Excel en ${filePath}.`
-      );
+    getBigOrderByDateAndShop: async (req, res) => {
+        try {
+            const {date, cityId, platformId} = req.query;
 
-      res.sendFile(filePath);
-    } catch (error) {
-      console.error("Error al exportar detalles de la orden a Excel:", error);
-    }
-  },
+            const bigOrders = await GetBigOrderByDateAndCity.execute(date, cityId, platformId);
+
+            if (!bigOrders || bigOrders.length === 0) {
+                return res.status(404).json({message: "No se encontraron pedidos"});
+            }
+
+            res.status(200).json(bigOrders);
+        } catch (error) {
+            res.status(500).json({error: error.message});
+        }
+    },
+
+    getBigOrder: async (req, res) => {
+        try {
+            const {id} = req.params;
+            const bigOrder = await GetBigOrderUseCase.execute(id);
+
+            if (!bigOrder || bigOrder.length === 0) {
+                return res.status(404).json({message: "No se encontraron pedidos"});
+            }
+
+            res.status(200).json(bigOrder);
+        } catch (error) {
+            res.status(500).json({error: error.message});
+        }
+    },
+
+    exportToExcel: async (req, res) => {
+        try {
+            const platformId = req.body.platformId;
+            const bigOrder = await BigOrderModel.findOne({
+                '_id': req.body.bigOrderId,
+                platformId
+            });
+
+            const date = bigOrder.date;
+            const cityId = bigOrder.cityId;
+            const startDate = new Date(date);
+
+            startDate.setUTCHours(0, 0, 0, 0);
+            const endDate = new Date(startDate);
+            endDate.setUTCDate(startDate.getUTCDate() + 1);
+            const orders = await OrderModel.find({
+                date: {$gte: startDate, $lt: endDate},
+                cityId,
+                platform: platformId
+            }).populate({
+                path: 'orderDetails.product',
+                populate: {
+                    path: 'supplierId'
+                }
+            }).populate('cityId');
+
+            if (!orders.length) {
+                console.log(
+                    "No se encontraron órdenes para la fecha y ciudad proporcionadas."
+                );
+                return;
+            }
+
+            const groupedDetailsBySupplier = {};
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("Order Details");
+
+            worksheet.columns = [
+                {header: "Proveedor", key: "supplier", width: 30},
+                {header: "Producto", key: "product", width: 30},
+                {header: "Cantidad", key: "quantity", width: 10},
+                {header: "Ciudad", key: "city", width: 10},
+            ];
+
+            let cityName = orders[0].cityId.name;
+            for (const order of orders) {
+                for (const detail of order.orderDetails) {
+                    const product = detail.product;
+                    const supplier = product.supplierId.name;
+                    const productName = product.name;
+                    const quantity = detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0;
+                    if (!groupedDetailsBySupplier[supplier]) {
+                        groupedDetailsBySupplier[supplier] = {};
+                    }
+
+                    if (!groupedDetailsBySupplier[supplier][productName]) {
+                        groupedDetailsBySupplier[supplier][productName] = 0;
+                    }
+
+                    groupedDetailsBySupplier[supplier][productName] += quantity;
+                }
+            }
+
+            for (const supplier in groupedDetailsBySupplier) {
+                if (groupedDetailsBySupplier.hasOwnProperty(supplier)) {
+                    const details = groupedDetailsBySupplier[supplier];
+                    for (const productName in details) {
+                        if (details.hasOwnProperty(productName)) {
+                            const quantity = details[productName];
+                            worksheet.addRow({supplier, product: productName, quantity, city: cityName});
+                        }
+                    }
+                    worksheet.addRow({supplier: '', product: '', quantity: '', city: ''});
+                }
+            }
+
+            const filePath = path.resolve(__dirname, "order_details.xlsx");
+            await workbook.xlsx.writeFile(filePath);
+
+            res.sendFile(filePath);
+        } catch (error) {
+            console.error("Error al exportar detalles de la orden a Excel:", error);
+        }
+    },
 
 };
 

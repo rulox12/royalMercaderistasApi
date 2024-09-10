@@ -5,8 +5,8 @@ class GetOrderUseCase {
     this.orderRepository = orderRepository;
   }
 
-  async execute(filters) {
-    return this.orderRepository.getAll(filters);
+  async execute(filters, page, limit) {
+    return this.orderRepository.getAll(filters, page, limit);
   }
 }
 

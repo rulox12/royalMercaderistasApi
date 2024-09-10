@@ -50,7 +50,7 @@ class ExportAllShops {
             const groupedDetailsByShop = {};
             const productNames = new Set();
 
-            orders.forEach(order => {
+            orders.orders.forEach(order => {
                 const shopName = order.shop.name;
 
                 if (!groupedDetailsByShop[shopName]) {

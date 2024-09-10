@@ -2,28 +2,28 @@ const BigOrderModel = require("../models/BigOrderModel");
 const mongoose = require('mongoose');
 
 class BigOrderRepository {
-  async create(order) {
-    const newOrder = new BigOrderModel(order);
-    await newOrder.save();
+  async create(bigOrder) {
+    const newBigOrder = new BigOrderModel(bigOrder);
+    await newBigOrder.save();
 
-    return newOrder.toObject();
+    return newBigOrder.toObject();
   }
 
   async findById(orderId) {
     return BigOrderModel.findById(orderId).exec();
   }
 
-  async findByDate(date, cityId) {
-    return BigOrderModel.findOne({ date, cityId }).exec();
+  async findByDate(date, cityId, platformId) {
+    return BigOrderModel.findOne({ date, cityId, platformId }).exec();
   }
 
-  async find(date, cityId) {
-    return BigOrderModel.findOne({ date, cityId }).exec();
+  async find(filters) {
+    return BigOrderModel.findOne(filters).exec();
   }
 
   async getAll() {
     try {
-      const bigOrders = await BigOrderModel.find().populate('cityId');
+      const bigOrders = await BigOrderModel.find().populate('cityId').populate('platformId');
       return bigOrders;
     } catch (error) {
       throw new Error(`Error while fetching big orders: ${error.message}`);
