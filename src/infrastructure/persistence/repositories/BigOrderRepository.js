@@ -23,13 +23,17 @@ class BigOrderRepository {
 
   async getAll() {
     try {
-      const bigOrders = await BigOrderModel.find().populate('cityId').populate('platformId');
-      return bigOrders;
+      return await BigOrderModel.find({
+        cityId: {$exists: true, $ne: null},
+        platformId: {$exists: true, $ne: null},
+      })
+          .populate('cityId')
+          .populate('platformId');
     } catch (error) {
       throw new Error(`Error while fetching big orders: ${error.message}`);
     }
   }
-
+  
   async getOrderByDateAndShop(date, shop) {
     if (!mongoose.Types.ObjectId.isValid(shop)) {
       return null;
