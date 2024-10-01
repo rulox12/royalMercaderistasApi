@@ -60,12 +60,17 @@ const exportController = {
             const shops = await ShopModel.find({platformId, cityId});
 
             // Obtener la lista de productos una sola vez
-            const listProducts = await ListProductModel.find({listId: shops[0].listId}).populate('productId');
+            const listProducts = await ListProductModel.find({listId: shops[0].listId})
+                .populate('productId');
+
+            // Ordenar por 'productId.position' en orden descendente
+            const sortedProducts = listProducts.sort((a, b) => {
+                return a.productId.position - b.productId.position;
+            });
 
             // Obtener todas las órdenes de una vez
             const orders = await OrderModel.find({
-                shop: {$in: shops.map(shop => shop._id)},
-                date: {$gte: startDateObj, $lte: endDateObj},
+                shop: {$in: shops.map(shop => shop._id)}, date: {$gte: startDateObj, $lte: endDateObj},
             }).populate('orderDetails.product');
 
             // Agrupar las órdenes por tienda y fecha
@@ -112,10 +117,10 @@ const exportController = {
                     const formattedDate = `${currentDate.toLocaleDateString('es-ES', {weekday: 'long'})} ${currentDate.getDate()} de ${currentDate.toLocaleDateString('es-ES', {month: 'long'})} de ${currentDate.getFullYear()}`;
 
                     headerRow.push(formattedDate, ...Array(6).fill('')); // Rellenar para ocupar 7 celdas
-                    subHeaders.push('PEDIDO', 'INVENTARIO - INICIAL', 'AVERIA', 'LOTE', 'PEDIDO - RECIBIDO', 'FINAL', 'VENTA');
+                    subHeaders.push('PEDIDO', 'INICIAL', 'AVERIA', 'LOTE', 'RECIBIDO', 'FINAL', 'VENTA');
 
                     // Identificar la posición de la columna "AVERIA"
-                    const averiaColIndex = headerRow.length - 4; // "AVERIA" es la segunda subcabecera
+                    const averiaColIndex = headerRow.length - 4;
                     const pedidoColIndex = headerRow.length - 2; // "AVERIA" es la segunda subcabecera
                     const ventaColIndex = headerRow.length; // "AVERIA" es la segunda subcabecera
                     averiaColumns.push(averiaColIndex); // Guardar el índice de la columna de "AVERIA"
@@ -134,19 +139,14 @@ const exportController = {
                 headerRowRef.eachCell((cell, colNumber) => {
                     cell.font = {bold: true, color: {argb: 'FFFFFFFF'}}; // Texto en blanco
                     cell.fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: {argb: 'FF0000FF'}, // Fondo azul
+                        type: 'pattern', pattern: 'solid', fgColor: {argb: 'FF0000FF'}, // Fondo azul
                     };
                     cell.alignment = {vertical: 'middle', horizontal: 'center'}; // Alinear al centro
 
                     // Aplicar bordes para enmarcar cada fecha
                     if (colNumber > 1) { // Saltar las primeras celdas vacías si es necesario
                         cell.border = {
-                            top: {style: 'thin'},
-                            left: {style: 'thin'},
-                            bottom: {style: 'thin'},
-                            right: {style: 'thin'}
+                            top: {style: 'thin'}, left: {style: 'thin'}, bottom: {style: 'thin'}, right: {style: 'thin'}
                         };
                     }
                 });
@@ -154,27 +154,39 @@ const exportController = {
                 subHeaderRowRef.eachCell((cell, colNumber) => {
                     cell.font = {bold: true, color: {argb: 'FFFFFFFF'}}; // Texto en blanco
                     cell.fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: {argb: 'FF0070C0'}, // Fondo azul más claro
+                        type: 'pattern', pattern: 'solid', fgColor: {argb: 'FF0070C0'}, // Fondo azul más claro
                     };
                     cell.alignment = {vertical: 'middle', horizontal: 'center'}; // Alinear al centro
 
                     // Aplicar bordes para enmarcar cada subcabecera
                     if (colNumber > 2) { // Saltar las primeras celdas vacías si es necesario
                         cell.border = {
-                            top: {style: 'thin'},
-                            left: {style: 'thin'},
-                            bottom: {style: 'thin'},
-                            right: {style: 'thin'}
+                            top: {style: 'thin'}, left: {style: 'thin'}, bottom: {style: 'thin'}, right: {style: 'thin'}
                         };
                     }
                 });
 
-                for (const listProduct of listProducts) {
+                const totalsByDate = {};
+
+                for (const listProduct of sortedProducts) {
+
                     const row = [listProduct.productId.name]; // Descripción del producto
+
                     for (let i = 0; i < dates.length; i++) {
                         const date = dates[i];
+
+                        if (!totalsByDate[date]) {
+                            totalsByDate[date] = {
+                                totalPEDI: 0,
+                                totalINVE: 0,
+                                totalAVER: 0,
+                                totalLOTE: 0,
+                                totalREC: 0,
+                                totalFINAL: 0,
+                                totalVENTA: 0
+                            };
+                        }
+
                         let totalINVE = 0;
                         let totalAVER = 0;
                         let totalLOTE = 0;
@@ -212,7 +224,70 @@ const exportController = {
                         totalVENTA = totalFINAL - nextDayInventory;
 
                         row.push(totalPEDI, totalINVE, totalAVER, totalLOTE, pedidoRecibido, totalFINAL, totalVENTA);
+
+                        totalsByDate[date].totalPEDI += totalPEDI;
+                        totalsByDate[date].totalINVE += totalINVE;
+                        totalsByDate[date].totalAVER += totalAVER;
+                        totalsByDate[date].totalLOTE += totalLOTE;
+                        totalsByDate[date].totalREC += pedidoRecibido;
+                        totalsByDate[date].totalFINAL += totalFINAL;
+                        totalsByDate[date].totalVENTA += totalVENTA;
                     }
+
+                    // Suponiendo que ya tienes el número de fechas
+                    // Suponiendo que ya tienes el número de fechas
+                    const numberOfDates = dates.length; // Asegúrate de que 'dates' tenga las fechas correctas
+                    const lastRowNumber = worksheet.lastRow.number + 1; // Número de la fila donde se insertará la fórmula
+
+                    // Inicializar un array para almacenar las referencias de las celdas
+                    let sumCellsPedi = [];
+                    let sumCellsIni = [];
+                    let sumCellsAveria = [];
+                    let sumCellsLote = [];
+                    let sumCellsRecibido = [];
+                    let sumCellsFinal = [];
+                    let sumCellsVenta = [];
+
+                    // Iterar para construir la referencia de celdas que se sumarán
+                    for (let i = 0; i < numberOfDates; i++) {
+                        const columnIndex = 2 + (i * 7); // 2 es el índice de la primera columna (PEDIDO)
+
+                        // Obtenemos la letra de cada columna correspondiente a cada dato
+                        const columnLetterPedi = getExcelColumnName(columnIndex);       // PEDIDO
+                        const columnLetterIni = getExcelColumnName(columnIndex + 1);    // INICIAL
+                        const columnLetterAveria = getExcelColumnName(columnIndex + 2); // AVERIA
+                        const columnLetterLote = getExcelColumnName(columnIndex + 3);   // LOTE
+                        const columnLetterRecibido = getExcelColumnName(columnIndex + 4); // RECIBIDO
+                        const columnLetterFinal = getExcelColumnName(columnIndex + 5);  // FINAL
+                        const columnLetterVenta = getExcelColumnName(columnIndex + 6);  // VENTA
+
+                        // Guardar las referencias de celdas que se usarán en la fórmula de suma
+                        sumCellsPedi.push(`${columnLetterPedi}${lastRowNumber}`);
+                        sumCellsIni.push(`${columnLetterIni}${lastRowNumber}`);
+                        sumCellsAveria.push(`${columnLetterAveria}${lastRowNumber}`);
+                        sumCellsLote.push(`${columnLetterLote}${lastRowNumber}`);
+                        sumCellsRecibido.push(`${columnLetterRecibido}${lastRowNumber}`);
+                        sumCellsFinal.push(`${columnLetterFinal}${lastRowNumber}`);
+                        sumCellsVenta.push(`${columnLetterVenta}${lastRowNumber}`);
+                    }
+
+                    // Crear las fórmulas de suma para cada columna
+                    const formulaColumnPedi = `SUM(${sumCellsPedi.join(', ')})`;
+                    const formulaColumnIni = `SUM(${sumCellsIni.join(', ')})`;
+                    const formulaColumnAveria = `SUM(${sumCellsAveria.join(', ')})`;
+                    const formulaColumnLote = `SUM(${sumCellsLote.join(', ')})`;
+                    const formulaColumnRecibido = `SUM(${sumCellsRecibido.join(', ')})`;
+                    const formulaColumnFinal = `SUM(${sumCellsFinal.join(', ')})`;
+                    const formulaColumnVenta = `SUM(${sumCellsVenta.join(', ')})`;
+
+
+                    row.push({formula: formulaColumnPedi});
+                    row.push({formula: formulaColumnIni});
+                    row.push({formula: formulaColumnAveria});
+                    row.push({formula: formulaColumnLote});
+                    row.push({formula: formulaColumnRecibido});
+                    row.push({formula: formulaColumnFinal});
+                    row.push({formula: formulaColumnVenta});
 
                     worksheet.addRow(row);
 
@@ -221,57 +296,64 @@ const exportController = {
                     averiaColumns.forEach(colIndex => {
                         const cell = lastRow.getCell(colIndex);
                         cell.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: {argb: 'fabf8f'}, // Naranja claro
+                            type: 'pattern', pattern: 'solid', fgColor: {argb: 'fabf8f'}, // Naranja claro
                         };
                         cell.font = {color: {argb: 'FF000000'}}; // Texto en negro
 
                         // Aplicar bordes a las celdas
                         cell.border = {
-                            top: {style: 'thin'},
-                            left: {style: 'thin'},
-                            bottom: {style: 'thin'},
-                            right: {style: 'thin'}
+                            top: {style: 'thin'}, left: {style: 'thin'}, bottom: {style: 'thin'}, right: {style: 'thin'}
                         };
                     });
 
                     pedidoColumns.forEach(colIndex => {
                         const cell = lastRow.getCell(colIndex);
                         cell.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: {argb: 'ffff99'}, // Naranja claro
+                            type: 'pattern', pattern: 'solid', fgColor: {argb: 'ffff99'}, // Naranja claro
                         };
                         cell.font = {color: {argb: 'FF000000'}}; // Texto en negro
 
                         // Aplicar bordes a las celdas
                         cell.border = {
-                            top: {style: 'thin'},
-                            left: {style: 'thin'},
-                            bottom: {style: 'thin'},
-                            right: {style: 'thin'}
+                            top: {style: 'thin'}, left: {style: 'thin'}, bottom: {style: 'thin'}, right: {style: 'thin'}
                         };
                     });
 
                     ventaColumns.forEach(colIndex => {
                         const cell = lastRow.getCell(colIndex);
                         cell.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: {argb: 'ccffcc'}, // Naranja claro
+                            type: 'pattern', pattern: 'solid', fgColor: {argb: 'ccffcc'}, // Naranja claro
                         };
                         cell.font = {color: {argb: 'FF000000'}}; // Texto en negro
 
                         // Aplicar bordes a las celdas
                         cell.border = {
-                            top: {style: 'thin'},
-                            left: {style: 'thin'},
-                            bottom: {style: 'thin'},
-                            right: {style: 'thin'}
+                            top: {style: 'thin'}, left: {style: 'thin'}, bottom: {style: 'thin'}, right: {style: 'thin'}
                         };
                     });
                 }
+                const rows = ['TOTAL'];
+
+                for (const date in totalsByDate) {
+                    const totals = totalsByDate[date];
+
+
+                    const row = [
+                        totals.totalPEDI,
+                        totals.totalINVE,
+                        totals.totalAVER,
+                        totals.totalLOTE,
+                        totals.totalREC,
+                        totals.totalFINAL,
+                        totals.totalVENTA
+                    ];
+
+                    rows.push(...row);
+                }
+
+                console.log(rows);
+
+                worksheet.addRow(rows);
             }
 
             // Enviar el archivo Excel
@@ -285,5 +367,15 @@ const exportController = {
         }
     }
 };
+
+function getExcelColumnName(columnIndex) {
+    let columnName = '';
+    while (columnIndex > 0) {
+        const remainder = (columnIndex - 1) % 26;
+        columnName = String.fromCharCode(65 + remainder) + columnName;
+        columnIndex = Math.floor((columnIndex - 1) / 26);
+    }
+    return columnName;
+}
 
 module.exports = exportController;
