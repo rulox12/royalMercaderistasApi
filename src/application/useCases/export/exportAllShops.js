@@ -21,7 +21,7 @@ class ExportAllShops {
             const startDateObj = new Date(formattedStartDate);
             const endDateObj = new Date(formattedEndDate);
 
-            startDateObj.setUTCHours(0, 0, 0, 0); // Establecer la hora a las 00:00:00 del día
+            startDateObj.setUTCHours(0, 0, 0, 0);
             endDateObj.setUTCHours(0, 0, 0, 0);
 
             if (city !== "123") {
@@ -74,16 +74,15 @@ class ExportAllShops {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Todas las Tiendas');
 
-            // Set column headers
             const columns = [{ header: 'Producto', key: 'productName', width: 30 }];
             for (const shopName in groupedDetailsByShop) {
                 if (groupedDetailsByShop.hasOwnProperty(shopName)) {
                     columns.push({ header: shopName, key: shopName, width: 20 });
                 }
             }
+
             worksheet.columns = columns;
 
-            // Add product rows
             productNames.forEach(productName => {
                 const row = { productName };
                 for (const shopName in groupedDetailsByShop) {
