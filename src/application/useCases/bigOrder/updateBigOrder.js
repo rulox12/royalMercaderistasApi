@@ -22,12 +22,11 @@ class UpdateBigOrder {
                     let orderId;
 
                     let order = await this.orderRepository.getOrderByDateAndShop(bigOrder.date, shopId);
-                    console.log('order',bigOrder);
                     if (order) {
                         orderId = order._id;
                         order.status = "APPROVED";
                     } else {
-                        const newOrder = new Order(null, bigOrder.date, shopId, 'APPROVED', userId, bigOrder.cityId, []);
+                        const newOrder = new Order(null, bigOrder.date, shopId, 'APPROVED', userId, bigOrder.cityId,bigOrder.platformId,[] );
                         order = await this.orderRepository.create(newOrder);
                         orderId = order._id;
                     }
