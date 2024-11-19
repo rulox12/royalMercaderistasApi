@@ -11,10 +11,16 @@ class OrderRepository {
     return OrderModel.findById(orderId).populate('orderDetails.product').exec();
   }
 
-  async getAll(filters, page = 1, limit = 30) {
+  async getAll(filters, page = 1, limit = 30, shopId = '') {
     try {
       const skip = (page - 1) * limit;
-      const orders = await OrderModel.find(filters)
+
+      let query = filters;
+
+      if (shopId) {
+        query.shop = shopId;
+      }
+      const orders = await OrderModel.find(query)
           .sort({ date: -1, _id: 1 })
           .skip(skip)
           .limit(limit)
