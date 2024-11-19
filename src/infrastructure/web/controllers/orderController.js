@@ -40,7 +40,7 @@ const orderController = {
 
   getOrders: async (req, res) => {
     try {
-      const { page = 1, limit = 50, ...filters } = req.query;
+      const { page = 1, limit = 30, ...filters } = req.query;
       const ordersData = await GetOrdersUseCase.execute(filters, parseInt(page), parseInt(limit));
 
       if (!ordersData.orders || ordersData.orders.length === 0) {
