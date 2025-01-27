@@ -1,5 +1,6 @@
 const BigOrderModel = require("../models/BigOrderModel");
 const mongoose = require('mongoose');
+const OrderModel = require("../models/OrderModel");
 
 class BigOrderRepository {
   async create(bigOrder) {
@@ -21,10 +22,25 @@ class BigOrderRepository {
     return BigOrderModel.findOne(filters).exec();
   }
 
-  async getAll() {
+  async getAll(filters, page = 1, limit = 30) {
     try {
-      const bigOrders = await BigOrderModel.find().populate('cityId').populate('platformId');
-      return bigOrders;
+      const skip = (page - 1) * limit;
+
+      const bigOrders = await BigOrderModel.find(filters)
+          .sort({ date: -1, _id: 1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('cityId')
+          .populate('platformId');
+
+      const totalBigOrders = await BigOrderModel.countDocuments(filters);
+
+      return {
+        bigOrders,
+        totalBigOrders,
+        totalPages: Math.ceil(totalBigOrders / limit),
+        currentPage: page,
+      };
     } catch (error) {
       throw new Error(`Error while fetching big orders: ${error.message}`);
     }
