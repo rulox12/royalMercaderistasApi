@@ -5,8 +5,8 @@ class GetBigOrdersUseCase {
     this.bigOrderRepository = bigOrderRepository;
   }
 
-  async execute() {
-    return this.bigOrderRepository.getAll();
+  async execute(filters, page, limit = '') {
+    return this.bigOrderRepository.getAll(filters, page, limit);
   }
 }
 

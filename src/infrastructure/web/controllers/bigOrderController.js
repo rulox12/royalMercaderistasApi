@@ -38,7 +38,8 @@ const bigOrderController = {
 
     getBigOrders: async (req, res) => {
         try {
-            const bigOrders = await GetBigOrdersUseCase.execute();
+            const {page = 1, limit = 30, ...filters} = req.query;
+            const bigOrders = await GetBigOrdersUseCase.execute(filters, parseInt(page), parseInt(limit));
 
             if (!bigOrders || bigOrders.length === 0) {
                 return res.status(404).json({message: "No se encontraron pedidos"});

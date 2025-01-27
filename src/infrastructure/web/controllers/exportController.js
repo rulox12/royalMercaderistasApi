@@ -47,7 +47,8 @@ const exportController = {
                 return `${year}-${month}-${day}`;
             };
 
-            const {startDate, endDate, platformId, cityId} = req.body;
+            const {startDate, endDate, platformId} = req.body;
+            let {cityId} = req.body;
             const formattedStartDate = formatDate(startDate);
             const formattedEndDate = formatDate(endDate);
 
@@ -56,7 +57,12 @@ const exportController = {
             startDateObj.setUTCHours(0, 0, 0, 0);
             endDateObj.setUTCHours(23, 59, 59, 999);
 
-            const shops = await ShopModel.find({platformId, cityId});
+            let requestShop = {platformId};
+            if (cityId !== '123') {
+                requestShop['cityId'] = cityId;
+            }
+
+            const shops = await ShopModel.find(requestShop);
 
             const listProducts = await ListProductModel.find({listId: shops[0].listId}).populate('productId');
 
@@ -96,7 +102,7 @@ const exportController = {
                 const endColumn = startColumn + subHeaders.length - 1;
                 worksheet.mergeCells(1, startColumn, 1, endColumn); // Combina celdas para la fecha
                 worksheet.getCell(1, startColumn).value = date; // Coloca la fecha en la celda combinada
-                worksheet.getCell(1, startColumn).alignment = { horizontal: 'center', vertical: 'middle' }; // Centra la fecha
+                worksheet.getCell(1, startColumn).alignment = {horizontal: 'center', vertical: 'middle'}; // Centra la fecha
                 columnHeaders.push(...subHeaders); // Añade los sub-encabezados para la segunda fila
             });
 
@@ -107,14 +113,14 @@ const exportController = {
                 cell.fill = {
                     type: 'pattern',
                     pattern: 'solid',
-                    fgColor: { argb: 'FFFFCC00' },
+                    fgColor: {argb: 'FFFFCC00'},
                 };
-                cell.font = { bold: true, color: { argb: 'FF000000' } };
+                cell.font = {bold: true, color: {argb: 'FF000000'}};
                 cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' },
+                    top: {style: 'thin'},
+                    left: {style: 'thin'},
+                    bottom: {style: 'thin'},
+                    right: {style: 'thin'},
                 };
             });
 
@@ -122,14 +128,14 @@ const exportController = {
                 cell.fill = {
                     type: 'pattern',
                     pattern: 'solid',
-                    fgColor: { argb: 'FFD9EAD3' },
+                    fgColor: {argb: 'FFD9EAD3'},
                 };
-                cell.font = { bold: true, color: { argb: 'FF000000' } };
+                cell.font = {bold: true, color: {argb: 'FF000000'}};
                 cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' },
+                    top: {style: 'thin'},
+                    left: {style: 'thin'},
+                    bottom: {style: 'thin'},
+                    right: {style: 'thin'},
                 };
             });
 
@@ -294,7 +300,7 @@ const exportController = {
                     dates.push(currentDate.toISOString().split('T')[0]);
                     currentDate.setDate(currentDate.getDate() + 1);
                 }
-                subHeaders.push('PEDIDO', 'INICIAL', 'AVERIA', 'LOTE', 'RECIBIDO', 'FINAL', 'VENTA', );
+                subHeaders.push('PEDIDO', 'INICIAL', 'AVERIA', 'LOTE', 'RECIBIDO', 'FINAL', 'VENTA',);
                 const headerRowRef = worksheet.addRow(headerRow);
                 const subHeaderRowRef = worksheet.addRow(['', ...subHeaders]);
 
@@ -447,14 +453,14 @@ const exportController = {
                             cell.fill = {
                                 type: 'pattern',
                                 pattern: 'solid',
-                                fgColor: { argb: fillColor }
+                                fgColor: {argb: fillColor}
                             };
-                            cell.font = { color: { argb: 'FF000000' } }; // Texto en negro
+                            cell.font = {color: {argb: 'FF000000'}}; // Texto en negro
                             cell.border = {
-                                top: { style: 'thin' },
-                                left: { style: 'thin' },
-                                bottom: { style: 'thin' },
-                                right: { style: 'thin' }
+                                top: {style: 'thin'},
+                                left: {style: 'thin'},
+                                bottom: {style: 'thin'},
+                                right: {style: 'thin'}
                             };
                         });
                     }
