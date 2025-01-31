@@ -45,7 +45,7 @@ class ExportAllShops {
                 orderDetailToExport = 'PEDI_REAL';
             }
 
-            const orders = await this.orderRepository.getAll(filters);
+            const orders = await this.orderRepository.getAll(filters, 1, 10000);
 
             const groupedDetailsByShop = {};
             const productNames = new Set();
@@ -66,25 +66,26 @@ class ExportAllShops {
                     if (!groupedDetailsByShop[shopName][productName]) {
                         groupedDetailsByShop[shopName][productName] = 0;
                     }
-
-                    groupedDetailsByShop[shopName][productName] += valueToExport;
+                    if(valueToExport){
+                        groupedDetailsByShop[shopName][productName] += valueToExport;
+                    }
                 });
             });
 
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Todas las Tiendas');
 
-            const columns = [{ header: 'Producto', key: 'productName', width: 30 }];
+            const columns = [{header: 'Producto', key: 'productName', width: 30}];
             for (const shopName in groupedDetailsByShop) {
                 if (groupedDetailsByShop.hasOwnProperty(shopName)) {
-                    columns.push({ header: shopName, key: shopName, width: 20 });
+                    columns.push({header: shopName, key: shopName, width: 20});
                 }
             }
 
             worksheet.columns = columns;
 
             productNames.forEach(productName => {
-                const row = { productName };
+                const row = {productName};
                 for (const shopName in groupedDetailsByShop) {
                     if (groupedDetailsByShop.hasOwnProperty(shopName)) {
                         row[shopName] = groupedDetailsByShop[shopName][productName] || 0;
