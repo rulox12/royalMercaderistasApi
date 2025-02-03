@@ -79,7 +79,7 @@ const exportController = {
             const ordersMap = new Map();
             for (const order of orders) {
                 const shopId = order.shop.toString();
-                const dateKey = order.date.toISOString().split('T')[0]; // "yyyy-mm-dd"
+                const dateKey = order.date.toISOString().split('T')[0];
                 if (!ordersMap.has(shopId)) {
                     ordersMap.set(shopId, new Map());
                 }
@@ -101,9 +101,11 @@ const exportController = {
                 const startColumn = 2 + index * subHeaders.length;
                 const endColumn = startColumn + subHeaders.length - 1;
                 worksheet.mergeCells(1, startColumn, 1, endColumn); // Combina celdas para la fecha
-                worksheet.getCell(1, startColumn).value = date; // Coloca la fecha en la celda combinada
-                worksheet.getCell(1, startColumn).alignment = {horizontal: 'center', vertical: 'middle'}; // Centra la fecha
-                columnHeaders.push(...subHeaders); // Añade los sub-encabezados para la segunda fila
+                date = new Date(date);
+
+                worksheet.getCell(1, startColumn).value = `${date.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'UTC' })} ${date.getUTCDate()} de ${date.toLocaleDateString('es-ES', { month: 'long', timeZone: 'UTC' })} de ${date.getUTCFullYear()}`;
+                worksheet.getCell(1, startColumn).alignment = {horizontal: 'center', vertical: 'middle'};
+                columnHeaders.push(...subHeaders);
             });
 
             worksheet.addRow(['Producto', ...dateRange.flatMap(() => subHeaders)]); // Añade la segunda fila con sub-encabezados
@@ -173,7 +175,7 @@ const exportController = {
                             const totalINVE = parseInt(orderDetail.INVE) || 0;
                             const totalAVER = parseInt(orderDetail.AVER) || 0;
                             const totalLOTE = parseInt(orderDetail.LOTE) || 0;
-                            const totalPEDI = parseInt(orderDetail.PEDI) || 0;
+                            const totalPEDI = parseInt(orderDetail.PEDI_REAL) || 0;
                             const totalRECI = parseInt(orderDetail.RECI) || 0;
 
                             const pedidoRecibido = totalRECI > 0 ? totalRECI : totalPEDI;
@@ -202,7 +204,7 @@ const exportController = {
 
             const totalRow = Array(columnHeaders.length).fill(0);
 
-// Iterar sobre cada fila de datos (excepto la fila de encabezados)
+            // Iterar sobre cada fila de datos (excepto la fila de encabezados)
             worksheet.eachRow((row, rowNumber) => {
                 if (rowNumber === 1 || rowNumber === 2) return; // Saltamos las filas de encabezados
 
@@ -286,7 +288,7 @@ const exportController = {
                 const headerRow = [''];
                 const subHeaders = [];
                 while (currentDate <= endDateObj) {
-                    const formattedDate = `${currentDate.toLocaleDateString('es-ES', {weekday: 'long'})} ${currentDate.getDate()} de ${currentDate.toLocaleDateString('es-ES', {month: 'long'})} de ${currentDate.getFullYear()}`;
+                    const formattedDate = `${currentDate.toLocaleDateString('es-ES', {weekday: 'long', timeZone: 'UTC'})} ${currentDate.getUTCDate()} de ${currentDate.toLocaleDateString('es-ES', {month: 'long', timeZone: 'UTC'})} de ${currentDate.getUTCFullYear()}`;
 
                     headerRow.push(formattedDate, ...Array(6).fill('')); // Rellenar para ocupar 7 celdas
                     subHeaders.push('PEDIDO', 'INICIAL', 'AVERIA', 'LOTE', 'RECIBIDO', 'FINAL', 'VENTA');
@@ -366,7 +368,7 @@ const exportController = {
                             totalINVE = parseInt(orderDetail.INVE) || 0;
                             totalAVER = parseInt(orderDetail.AVER) || 0;
                             totalLOTE = parseInt(orderDetail.LOTE) || 0;
-                            totalPEDI = parseInt(orderDetail.PEDI) || 0;
+                            totalPEDI = parseInt(orderDetail.PEDI_REAL) || 0;
                             totalRECI = parseInt(orderDetail.RECI) || 0;
                         }
 
