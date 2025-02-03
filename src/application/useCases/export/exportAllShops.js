@@ -49,6 +49,7 @@ class ExportAllShops {
 
             const groupedDetailsByShop = {};
             const productNames = new Set();
+            const productsWithPosition = [];
 
             orders.orders.forEach(order => {
                 const shopName = order.shop.name;
@@ -57,20 +58,34 @@ class ExportAllShops {
                     groupedDetailsByShop[shopName] = {};
                 }
 
+
                 order.orderDetails.forEach(detail => {
                     const productName = detail.product.name;
                     const valueToExport = parseFloat(detail[orderDetailToExport]);
+                    const productPosition = detail.product.position;
 
                     productNames.add(productName);
 
                     if (!groupedDetailsByShop[shopName][productName]) {
                         groupedDetailsByShop[shopName][productName] = 0;
                     }
+
+                    if(shopName === "CR Ramblas" && productName === "Lechuga Verde Crespa"){
+                        console.log(order.date,valueToExport)
+                    }
+
                     if(valueToExport){
                         groupedDetailsByShop[shopName][productName] += valueToExport;
                     }
+
+                    if (!productsWithPosition.some(p => p.name === productName)) {
+                        productsWithPosition.push({ name: productName, position: productPosition });
+                    }
                 });
             });
+
+            productsWithPosition.sort((a, b) => a.position - b.position);
+
 
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Todas las Tiendas');
@@ -84,11 +99,11 @@ class ExportAllShops {
 
             worksheet.columns = columns;
 
-            productNames.forEach(productName => {
-                const row = {productName};
+            productsWithPosition.forEach(product => {
+                const row = { productName: product.name };
                 for (const shopName in groupedDetailsByShop) {
                     if (groupedDetailsByShop.hasOwnProperty(shopName)) {
-                        row[shopName] = groupedDetailsByShop[shopName][productName] || 0;
+                        row[shopName] = groupedDetailsByShop[shopName][product.name] || 0;
                     }
                 }
                 worksheet.addRow(row);
