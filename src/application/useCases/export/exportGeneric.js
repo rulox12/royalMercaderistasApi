@@ -41,7 +41,7 @@ class ExportGenericUseCase {
                 };
             }
 
-            const orders = await this.orderRepository.getAll(filters);
+            const orders = await this.orderRepository.getAll(filters, 1, 10000);
 
             const groupedDetailsByProduct = {};
 
@@ -56,11 +56,14 @@ class ExportGenericUseCase {
                     if (!groupedDetailsByProduct[productName]) {
                         groupedDetailsByProduct[productName] = [];
                     }
-                    groupedDetailsByProduct[productName].push(valueToExport);
+                    if(valueToExport) {
+                        groupedDetailsByProduct[productName].push(valueToExport);
+                    }
                 });
             });
 
             const dataToExport = [];
+
             for (const productName in groupedDetailsByProduct) {
                 if (groupedDetailsByProduct.hasOwnProperty(productName)) {
                     const values = groupedDetailsByProduct[productName];

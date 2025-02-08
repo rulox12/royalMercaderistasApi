@@ -70,14 +70,10 @@ class ExportAllShops {
                         groupedDetailsByShop[shopName][productName] = 0;
                     }
 
-                    if(shopName === "CR Ramblas" && productName === "Lechuga Verde Crespa"){
-                        console.log(order.date,valueToExport)
-                    }
-
                     if(valueToExport){
                         groupedDetailsByShop[shopName][productName] += valueToExport;
                     }
-
+                    
                     if (!productsWithPosition.some(p => p.name === productName)) {
                         productsWithPosition.push({ name: productName, position: productPosition });
                     }
