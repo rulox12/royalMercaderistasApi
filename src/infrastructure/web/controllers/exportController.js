@@ -78,8 +78,11 @@ const exportController = {
 
             const ordersMap = new Map();
             for (const order of orders) {
+                const orderDate = new Date(order.date);
+                if (orderDate.getUTCDay() === 0) continue; // Si es domingo, ignorar la orden
+
                 const shopId = order.shop.toString();
-                const dateKey = order.date.toISOString().split('T')[0];
+                const dateKey = orderDate.toISOString().split('T')[0];
                 if (!ordersMap.has(shopId)) {
                     ordersMap.set(shopId, new Map());
                 }
@@ -103,7 +106,13 @@ const exportController = {
                 worksheet.mergeCells(1, startColumn, 1, endColumn); // Combina celdas para la fecha
                 date = new Date(date);
 
-                worksheet.getCell(1, startColumn).value = `${date.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'UTC' })} ${date.getUTCDate()} de ${date.toLocaleDateString('es-ES', { month: 'long', timeZone: 'UTC' })} de ${date.getUTCFullYear()}`;
+                worksheet.getCell(1, startColumn).value = `${date.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    timeZone: 'UTC'
+                })} ${date.getUTCDate()} de ${date.toLocaleDateString('es-ES', {
+                    month: 'long',
+                    timeZone: 'UTC'
+                })} de ${date.getUTCFullYear()}`;
                 worksheet.getCell(1, startColumn).alignment = {horizontal: 'center', vertical: 'middle'};
                 columnHeaders.push(...subHeaders);
             });
@@ -288,7 +297,18 @@ const exportController = {
                 const headerRow = [''];
                 const subHeaders = [];
                 while (currentDate <= endDateObj) {
-                    const formattedDate = `${currentDate.toLocaleDateString('es-ES', {weekday: 'long', timeZone: 'UTC'})} ${currentDate.getUTCDate()} de ${currentDate.toLocaleDateString('es-ES', {month: 'long', timeZone: 'UTC'})} de ${currentDate.getUTCFullYear()}`;
+                    if (currentDate.getUTCDay() === 0) {
+                        currentDate.setDate(currentDate.getDate() + 1); // Saltar al siguiente día
+                        continue;
+                    }
+
+                    const formattedDate = `${currentDate.toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        timeZone: 'UTC'
+                    })} ${currentDate.getUTCDate()} de ${currentDate.toLocaleDateString('es-ES', {
+                        month: 'long',
+                        timeZone: 'UTC'
+                    })} de ${currentDate.getUTCFullYear()}`;
 
                     headerRow.push(formattedDate, ...Array(6).fill('')); // Rellenar para ocupar 7 celdas
                     subHeaders.push('PEDIDO', 'INICIAL', 'AVERIA', 'LOTE', 'RECIBIDO', 'FINAL', 'VENTA');
@@ -385,7 +405,27 @@ const exportController = {
                         }
                         totalVENTA = totalFINAL - nextDayInventory;
 
-                        row.push(totalPEDI, totalINVE, totalAVER, totalLOTE, pedidoRecibido, totalFINAL, totalVENTA);
+                        const rowIndex = worksheet.rowCount + 1;
+
+                        const colTotalINVE = getExcelColumnName(66 - 65 + i * 7 + 2);
+                        const colPedidoRecibido = getExcelColumnName(66 - 65 + i * 7 + 5);
+                        const colTotalAVER = getExcelColumnName(66 - 65 + i * 7 + 3);
+                        const colTotalFinal = getExcelColumnName(66 - 65 + i * 7 + 6);
+                        const colTotalNextDayINICIAL = getExcelColumnName(66 - 65 + i * 7 + 9);
+
+
+                        const formulaTotalFinal = `=${colTotalINVE}${rowIndex}+${colPedidoRecibido}${rowIndex}-${colTotalAVER}${rowIndex}`;
+                        const formulaTotalVenta = `=${colTotalFinal}${rowIndex}-${colTotalNextDayINICIAL}${rowIndex}`;
+
+                        row.push(
+                            totalPEDI,
+                            totalINVE,
+                            totalAVER,
+                            totalLOTE,
+                            pedidoRecibido,
+                            {formula: formulaTotalFinal},
+                            {formula: formulaTotalVenta},
+                        );
 
                         totalsByDate[date].totalPEDI += totalPEDI;
                         totalsByDate[date].totalINVE += totalINVE;
@@ -518,10 +558,15 @@ function getExcelColumnName(columnIndex) {
 const generateDateRange = (startDate, endDate) => {
     const dateArray = [];
     let currentDate = new Date(startDate);
+
     while (currentDate <= endDate) {
-        dateArray.push(currentDate.toISOString().split('T')[0]); // "yyyy-mm-dd"
+        if (currentDate.getUTCDay() !== 0) { // 0 es domingo
+            dateArray.push(currentDate.toISOString().split('T')[0]);
+        }
+        
         currentDate.setDate(currentDate.getDate() + 1);
     }
+
     return dateArray;
 };
 
