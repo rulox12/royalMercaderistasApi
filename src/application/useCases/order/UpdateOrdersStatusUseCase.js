@@ -6,6 +6,7 @@ class UpdateOrdersStatusUseCase {
     }
 
     async execute(orderIds, newStatus) {
+        return this.orderRepository.updateMany(
             { _id: { $in: orderIds } },
             { status: newStatus }
         );
