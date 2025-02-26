@@ -31,7 +31,6 @@ class UpdateBigOrder {
                         orderId = order._id;
                     }
 
-                    // Actualizar o crear el detalle de la orden
                     let orderDetail = order.orderDetails.find(detail => detail.product.equals(productId));
                     if (orderDetail) {
                         orderDetail.PEDI_REAL = quantity;
@@ -51,6 +50,8 @@ class UpdateBigOrder {
                     await order.save();
                 }
             }
+
+            await this.bigOrderRepository.update(bigOrderId, { status: "Approved" });
         } catch (error) {
             throw new Error(`Error updating BigOrder: ${error.message}`);
         }
