@@ -8,7 +8,7 @@ class GetOrdersByDateWithDetailsUseCase {
     async execute(date, cityId, platformId) {
         let orders = {};
         if (platformId) {
-            orders = await this.orderRepository.getAll({date, cityId, platformId});
+            orders = await this.orderRepository.getAll({date, cityId, 'platform':platformId});
         } else {
             orders = await this.orderRepository.getAll({date, cityId});
         }

@@ -1,5 +1,6 @@
 const CreateBigOrderUseCase = require("../../../application/useCases/bigOrder/createBigOrder");
 const GetOrdersByDateWithDetails = require("../../../application/useCases/order/getOrdersByDateWithDetails");
+const UpdateOrdersStatusUseCase = require("../../../application/useCases/order/UpdateOrdersStatusUseCase");
 const GetBigOrdersUseCase = require("../../../application/useCases/bigOrder/getBigOrders");
 const GetBigOrderUseCase = require("../../../application/useCases/bigOrder/getBigOrder");
 const GetBigOrderByDateAndCity = require("../../../application/useCases/bigOrder/getBigOrderByDateAndCity");
@@ -16,6 +17,13 @@ const bigOrderController = {
 
             const createdBigOrder = await CreateBigOrderUseCase.execute(date, cityId, platformId);
             const orders = await GetOrdersByDateWithDetails.execute(date, cityId, platformId);
+
+            const orderIds = orders?.map(order => order.order._id);
+
+            if (orderIds.length > 0) {
+                await UpdateOrdersStatusUseCase.execute(orderIds, "Approved");
+            }
+
 
             res.status(201).json({createdBigOrder, orders});
         } catch (error) {
