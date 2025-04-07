@@ -100,6 +100,17 @@ class OrderRepository {
     async updateMany(filter, updateData) {
         return OrderModel.updateMany(filter, { $set: updateData });
     }
+
+    async getReceivedShopsByDate(date) {
+        const formattedDate = new Date(date);
+
+        const receivedShops = await OrderModel.aggregate([
+            { $match: { date: formattedDate } },
+            { $group: { _id: "$shop" } },
+        ]);
+
+        return receivedShops.map(shop => shop._id.toString());
+    }
 }
 
 module.exports = OrderRepository;

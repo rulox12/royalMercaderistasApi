@@ -7,5 +7,6 @@ router.get('/:orderId', orderController.getOrder);
 router.get('/', orderController.getOrders);
 router.post('/get-orders-by-dates-and-shop', orderController.getOrdersByDatesAndShop);
 router.post('/get-orders-by-date', orderController.getOrdersByDate);
+router.get("/not-received/:date", orderController.getNotReceivedOrders);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const GetOrderUseCase = require('../../../application/useCases/order/getOrder');
 const GetOrdersUseCase = require('../../../application/useCases/order/getOrders');
 const CreateOrderDetailsUseCase = require('../../../application/useCases/order/createOrderDetailsUseCase');
 const GetManyOrdersUseCase = require('../../../application/useCases/order/getManyOrdersUseCase');
+const GetNotReceivedOrdersUseCase = require('../../../application/useCases/order/GetNotReceivedOrdersUseCase');
 const getOrdersByDateWithDetails = require('../../../application/useCases/order/getOrdersByDateWithDetails');
 
 const orderController = {
@@ -89,6 +90,19 @@ const orderController = {
 
         } catch (error) {
 
+        }
+    },
+
+    getNotReceivedOrders: async (req, res)  =>{
+        try {
+            const { date } = req.params;
+            console.log(date);
+            const notReceivedShops = await GetNotReceivedOrdersUseCase.execute(date);
+
+            return res.json({ date, notReceivedShops });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: "Error al obtener órdenes no recibidas" });
         }
     }
 };
