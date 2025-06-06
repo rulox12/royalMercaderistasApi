@@ -111,6 +111,29 @@ class OrderRepository {
 
         return receivedShops.map(shop => shop._id.toString());
     }
+
+    async getReceivedShopsByDateRange(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        const receivedShops = await OrderModel.aggregate([
+            {
+                $match: {
+                    date: {
+                        $gte: start,
+                        $lte: end
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$shop"
+                }
+            }
+        ]);
+
+        return receivedShops.map(shop => shop._id.toString());
+    }
 }
 
 module.exports = OrderRepository;

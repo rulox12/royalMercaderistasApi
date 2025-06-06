@@ -4,6 +4,7 @@ const GetOrdersUseCase = require('../../../application/useCases/order/getOrders'
 const CreateOrderDetailsUseCase = require('../../../application/useCases/order/createOrderDetailsUseCase');
 const GetManyOrdersUseCase = require('../../../application/useCases/order/getManyOrdersUseCase');
 const GetNotReceivedOrdersUseCase = require('../../../application/useCases/order/GetNotReceivedOrdersUseCase');
+const GetNotReceivedOrdersByShopAndRangeUseCase = require('../../../application/useCases/order/GetNotReceivedOrdersByShopAndRangeUseCase');
 const getOrdersByDateWithDetails = require('../../../application/useCases/order/getOrdersByDateWithDetails');
 
 const orderController = {
@@ -100,6 +101,18 @@ const orderController = {
             const notReceivedShops = await GetNotReceivedOrdersUseCase.execute(date);
 
             return res.json({ date, notReceivedShops });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: "Error al obtener órdenes no recibidas" });
+        }
+    },
+    getNotReceivedOrdersByShopAndRange: async (req, res)  =>{
+        try {
+            const { shopId, startDate, endDate } = req.params;
+
+            const notReceivedShops = await GetNotReceivedOrdersByShopAndRangeUseCase.execute(shopId, startDate, endDate);
+
+            return res.json({ shopId, startDate, endDate, notReceivedShops });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: "Error al obtener órdenes no recibidas" });
