@@ -44,6 +44,10 @@ const OrderSchema = new Schema({
         VENT: String,
         PEDI_REAL: String,
     }],
+    details: {
+        type: String,
+        default: '',
+    }
 });
 
 const OrderModel = mongoose.model('Order', OrderSchema);
