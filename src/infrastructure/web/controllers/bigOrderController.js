@@ -141,7 +141,7 @@ const bigOrderController = {
                     const product = detail.product;
                     const supplier = product.supplierId.name;
                     const productName = product.name;
-                    const quantity = detail.PEDI_REAL ? parseFloat(detail.PEDI_REAL) : 0;
+                    const quantity = detail.PEDI ? parseFloat(detail.PEDI) : 0;
                     if (!groupedDetailsBySupplier[supplier]) {
                         groupedDetailsBySupplier[supplier] = {};
                     }

@@ -99,7 +99,6 @@ const orderController = {
     getNotReceivedOrders: async (req, res) => {
         try {
             const { date } = req.params;
-            console.log(date);
             const notReceivedShops = await GetNotReceivedOrdersUseCase.execute(date);
 
             return res.json({ date, notReceivedShops });

@@ -35,7 +35,7 @@ class CreateOrderDetailsUseCase {
                 existingDetail.INVE = INVE;
                 existingDetail.AVER = AVER;
                 existingDetail.LOTE = LOTE;
-                existingDetail.RECI = RECI;
+                existingDetail.RECI = RECI === "" || RECI === null || RECI === undefined ? PEDI : RECI;
                 existingDetail.PEDI = PEDI;
                 existingDetail.VENT = VENT;
                 existingDetail.PEDI_REAL = PEDI;
