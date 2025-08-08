@@ -184,7 +184,7 @@ const exportController = {
                             const totalINVE = parseInt(orderDetail.INVE) || 0;
                             const totalAVER = parseInt(orderDetail.AVER) || 0;
                             const totalLOTE = parseInt(orderDetail.LOTE) || 0;
-                            const totalPEDI = parseInt(orderDetail.PEDI_REAL) || 0;
+                            const totalPEDI = parseInt(orderDetail.PEDI) || 0;
                             const totalRECI = parseInt(orderDetail.RECI) || 0;
 
                             const pedidoRecibido = totalRECI > 0 ? totalRECI : totalPEDI;
@@ -388,7 +388,7 @@ const exportController = {
                             totalINVE = parseInt(orderDetail.INVE) || 0;
                             totalAVER = parseInt(orderDetail.AVER) || 0;
                             totalLOTE = parseInt(orderDetail.LOTE) || 0;
-                            totalPEDI = parseInt(orderDetail.PEDI_REAL) || 0;
+                            totalPEDI = parseInt(orderDetail.PEDI) || 0;
                             totalRECI = parseInt(orderDetail.RECI) || 0;
                         }
 

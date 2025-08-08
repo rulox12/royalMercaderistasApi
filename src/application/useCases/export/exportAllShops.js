@@ -42,7 +42,7 @@ class ExportAllShops {
             }
 
             if (orderDetailToExport === 'PEDI') {
-                orderDetailToExport = 'PEDI_REAL';
+                orderDetailToExport = 'PEDI';
             }
 
             const orders = await this.orderRepository.getAll(filters, 1, 10000);
