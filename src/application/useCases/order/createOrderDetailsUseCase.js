@@ -25,7 +25,7 @@ class CreateOrderDetailsUseCase {
                 INVE,
                 AVER,
                 LOTE,
-                RECI,
+                RECI: RECI === "" || RECI === null || RECI === undefined ? PEDI : RECI,
                 PEDI,
                 VENT,
             };
