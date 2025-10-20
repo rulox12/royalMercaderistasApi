@@ -11,7 +11,6 @@ class GetNotReceivedOrdersUseCase {
         const allShops = await this.shopRepository.getAll({},['userId', 'cityId', 'listId', 'platformId']);
 
         const receivedShopIds = await this.orderRepository.getReceivedShopsByDate(date);
-        console.log(receivedShopIds)
 
         const notReceivedShops = allShops.filter(shop => !receivedShopIds.includes(shop._id.toString()));
 
