@@ -39,7 +39,10 @@ class CalculateSalesUseCase {
             const productId = currentDetail.product.toString();
             const inveFinal = nextInveMap.get(productId) || 0;
             const inveInicial = parseFloat(currentDetail.INVE || "0");
-            const venta = inveInicial - inveFinal;
+            const averiaInicial = parseFloat(currentDetail.AVER || "0");
+            const recibidoInicial = parseFloat(currentDetail.RECI || "0");
+
+            const venta = inveInicial - averiaInicial + recibidoInicial  - inveFinal;
 
             return {
                 product: currentDetail.product,
