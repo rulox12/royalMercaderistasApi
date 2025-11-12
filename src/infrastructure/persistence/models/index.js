@@ -1,0 +1,11 @@
+require("./UserModel");
+require("./RoleModel");
+require("./ShopModel");
+require("./OrderModel");
+require("./ProductModel");
+require("./PlatformModel");
+require("./CityModel");
+require("./ListModel");
+require("./ListProductModel");
+require("./SupplierModel");
+require("./BigOrderModel");
