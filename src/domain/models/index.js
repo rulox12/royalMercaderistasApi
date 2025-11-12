@@ -1,0 +1,10 @@
+require("./User");
+require("./Role");
+require("./Shop");
+require("./Order");
+require("./Product");
+require("./Platform");
+require("./City");
+require("./List");
+require("./Supplier");
+require("./BigOrder");
