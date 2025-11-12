@@ -134,6 +134,26 @@ class OrderRepository {
 
         return receivedShops.map(shop => shop._id.toString());
     }
+
+    async updateReceivedFields(orderId, updatedDetails) {
+        try {
+            const order = await OrderModel.findById(orderId);
+            if (!order) throw new Error("Orden no encontrada");
+
+            // Actualizar RECI en cada detalle
+            order.orderDetails.forEach(detail => {
+                const updated = updatedDetails.find(d => d._id?.toString() === detail._id.toString());
+                if (updated) {
+                    detail.RECI = updated.RECI;
+                }
+            });
+
+            await order.save();
+            return order;
+        } catch (error) {
+            throw new Error(`Error al actualizar RECI: ${error.message}`);
+        }
+    }
 }
 
 module.exports = OrderRepository;
