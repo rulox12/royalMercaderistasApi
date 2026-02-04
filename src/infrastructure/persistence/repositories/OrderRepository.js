@@ -22,7 +22,7 @@ class OrderRepository {
             }
 
             const orders = await OrderModel.find(query)
-                .sort({date: -1, _id: 1})
+                .sort({ date: -1, _id: 1 })
                 .skip(skip)
                 .limit(limit)
                 .populate('cityId')
@@ -43,12 +43,12 @@ class OrderRepository {
     }
 
     async getOrderByDateAndShop(date, shop) {
-        return OrderModel.findOne({date, shop}).populate('orderDetails.product').exec();
+        return OrderModel.findOne({ date, shop }).populate('orderDetails.product').exec();
     }
 
     async getOrdersByDate(date) {
         try {
-            const orders = await OrderModel.find({date});
+            const orders = await OrderModel.find({ date });
             return orders;
         } catch (error) {
             throw new Error(`Error while fetching orders: ${error.message}`);
@@ -57,7 +57,7 @@ class OrderRepository {
 
     async getOrdersByUser(userId) {
         try {
-            const orders = await OrderModel.find({date}).populate('orderDetails.product');
+            const orders = await OrderModel.find({ date }).populate('orderDetails.product');
             return orders;
         } catch (error) {
             throw new Error(`Error while fetching orders: ${error.message}`);
@@ -79,7 +79,7 @@ class OrderRepository {
             const updatedOrder = await OrderModel.findByIdAndUpdate(
                 orderId,
                 updatedFields,
-                {new: true}
+                { new: true }
             ).populate('orderDetails.product').exec();
 
             return updatedOrder;
@@ -153,6 +153,38 @@ class OrderRepository {
         } catch (error) {
             throw new Error(`Error al actualizar RECI: ${error.message}`);
         }
+    }
+
+    async getOrdersByShopAndDateRange(shopId, startDate, endDate) {
+        return OrderModel.find({
+            shop: shopId,
+            date: { $gte: startDate, $lte: endDate }
+        });
+    }
+
+    async getOrdersByDateRangeWithPlatform(startDate, endDate) {
+        return OrderModel.find({
+            date: { $gte: startDate, $lte: endDate }
+        })
+            .populate('platform') // asegúrate que tu modelo Order tenga la relación con Platform
+            .populate('orderDetails.product');
+    }
+
+    async getOrdersByPlatform(platformId) {
+        return OrderModel.find({ platform: platformId })
+            .populate('platform')
+            .populate('shop')
+            .populate('cityId')
+            .populate('orderDetails.product');
+    }
+
+    async getOrdersByPlatformAndDateRange(platformId, ranges) {
+        return OrderModel.find({
+            platform: platformId,
+            $or: ranges.map(r => ({
+                date: { $gte: r.start, $lte: r.end }
+            }))
+        }).populate("cityId").populate("orderDetails.product");
     }
 }
 

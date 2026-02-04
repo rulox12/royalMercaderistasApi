@@ -52,7 +52,10 @@ class CalculateSalesUseCase {
                 RECI: currentDetail.RECI,
                 PEDI: currentDetail.PEDI,
                 VENT: venta.toString(),
-                PEDI_REAL: currentDetail.PEDI_REAL
+                PEDI_REAL: currentDetail.PEDI_REAL,
+                cost: currentDetail.cost,
+                salePrice: currentDetail.salePrice,
+                RENT: currentDetail.RENT,
             };
         });
 

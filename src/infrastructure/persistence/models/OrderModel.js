@@ -43,6 +43,15 @@ const OrderSchema = new Schema({
         PEDI: String,
         VENT: String,
         PEDI_REAL: String,
+        RENT: String,
+        cost: {
+            type: String,
+            required: true,
+        },
+        salePrice: {
+            type: String,
+            required: true,
+        },
     }],
     details: {
         type: String,

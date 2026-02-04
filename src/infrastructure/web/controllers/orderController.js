@@ -7,6 +7,10 @@ const GetNotReceivedOrdersUseCase = require('../../../application/useCases/order
 const GetNotReceivedOrdersByShopAndRangeUseCase = require('../../../application/useCases/order/GetNotReceivedOrdersByShopAndRangeUseCase');
 const getOrdersByDateWithDetails = require('../../../application/useCases/order/getOrdersByDateWithDetails');
 const CalculateSalesUseCase = require('../../../application/useCases/order/CalculateSalesUseCase');
+const CompareOrdersByMonthYearUseCase = require('../../../application/useCases/order/CompareOrdersByMonthYearUseCase');
+const ComparePlatformsUseCase = require('../../../application/useCases/order/ComparePlatformsUseCase');
+const ComparePlatformCitiesUseCase = require('../../../application/useCases/order/ComparePlatformCitiesUseCase');
+
 const { collectGenerateParams } = require('next/dist/build/utils');
 
 const orderController = {
@@ -136,6 +140,63 @@ const orderController = {
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: error.message });
+        }
+    },
+
+    compareByMonthYear: async (req, res) => {
+        try {
+            console.log("📥 Entró a compareByMonthYear con query:", req.query);
+
+            const { shopId, monthA, yearA, monthB, yearB } = req.query;
+            const report = await CompareOrdersByMonthYearUseCase.execute(shopId, monthA, yearA, monthB, yearB);
+            res.status(200).json(report);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
+    comparePlatforms: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+
+            if (!startDate || !endDate) {
+                return res.status(400).json({ error: 'Debe enviar startDate y endDate en la query' });
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            const report = await ComparePlatformsUseCase.execute(start, end);
+
+            return res.json(report);
+        } catch (error) {
+            console.error('Error en compare-platforms:', error);
+            return res.status(500).json({ error: 'Error interno al generar el reporte por plataformas' });
+        }
+    },
+
+    comparePlatformCities: async (req, res) => {
+        try {
+            const {platformId, monthA, yearA, monthB, yearB} = req.query;
+
+            if (!platformId || !monthA || !yearA || !monthB || !yearB) {
+                return res.status(400).json({
+                    error: 'Debe enviar platformId, monthA, yearA, monthB y yearB en la query'
+                });
+            }
+
+            const report = await ComparePlatformCitiesUseCase.execute(
+                platformId,
+                Number(monthA),
+                Number(yearA),
+                Number(monthB),
+                Number(yearB)
+            );
+
+            return res.json(report);
+        } catch (error) {
+            console.error('Error en compare-platform-cities:', error);
+            return res.status(500).json({error: 'Error interno al generar el reporte por ciudades'});
         }
     }
 };
