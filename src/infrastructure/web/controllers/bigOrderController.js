@@ -27,7 +27,7 @@ const bigOrderController = {
 
             res.status(201).json({createdBigOrder, orders});
         } catch (error) {
-            res.status(500).json({errors: error.message});
+            res.status(500).json({'errors': error.message});
         }
     },
 
