@@ -11,7 +11,7 @@ const CompareOrdersByMonthYearUseCase = require('../../../application/useCases/o
 const ComparePlatformsUseCase = require('../../../application/useCases/order/ComparePlatformsUseCase');
 const ComparePlatformCitiesUseCase = require('../../../application/useCases/order/ComparePlatformCitiesUseCase');
 
-const { collectGenerateParams } = require('next/dist/build/utils');
+require('next/dist/build/utils');
 
 const orderController = {
     createOrder: async (req, res) => {

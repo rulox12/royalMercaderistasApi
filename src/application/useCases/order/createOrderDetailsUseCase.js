@@ -60,6 +60,9 @@ class CreateOrderDetailsUseCase {
                 existingDetail.VENT = VENT;
                 existingDetail.PEDI_REAL = PEDI;
                 existingDetail.RENT = RENT;
+                if (!listProduct.cost || listProduct.cost.trim() === "") {
+                    console.log("Falta cost en:", listProduct);
+                }
 
                 existingDetail.cost = listProduct.cost;
                 existingDetail.salePrice = listProduct.salePrice;
@@ -71,7 +74,7 @@ class CreateOrderDetailsUseCase {
                 orderDetails.push(orderDetail);
             }
         }
-
+        
         await order.save();
 
         return orderDetails;
