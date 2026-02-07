@@ -22,6 +22,11 @@ class UpdateBigOrder {
                     const [productId, shopId] = key.split("_");
                     const productData = products[key];
 
+                    // Normalizar productData: el frontend a veces envía un valor primitivo (ej. 1)
+                    // en lugar de un objeto con campos. Convertimos a objeto para mantener
+                    // la compatibilidad con el resto del flujo.
+                    const pdata = (productData && typeof productData === 'object') ? productData : { PEDI: productData };
+
                     let orderId;
 
                     let order =
@@ -50,8 +55,16 @@ class UpdateBigOrder {
                     let orderDetail = order.orderDetails.find((detail) =>
                         detail.product.equals(productId),
                     );
+                    
                     if (orderDetail) {
-                        orderDetail.PEDI_REAL = productData.PEDI;
+                        orderDetail.PEDI_REAL = pdata.PEDI;
+                        console.log(`UpdateBigOrder: setting PEDI_REAL for order ${order._id} detail ${orderDetail._id || orderDetail.product} ->`, pdata.PEDI);
+                        if (pdata.PEDI === undefined) {
+                            console.warn('UpdateBigOrder: normalized productData has no PEDI for key', key, 'pdata ->', pdata, 'original ->', productData);
+                        }
+                        if (typeof order.markModified === 'function') {
+                            order.markModified('orderDetails');
+                        }
                     } else {
                         const shop = await ShopModel.findById(shopId);
                         if (!shop) {
@@ -70,8 +83,7 @@ class UpdateBigOrder {
                         }
 
                         // Crear el detalle completo
-                        const { INVE, AVER, LOTE, RECI, PEDI, VENT, RENT } =
-                            productData;
+                        const { INVE, AVER, LOTE, RECI, PEDI, VENT, RENT } = pdata;
 
                         const newDetail = {
                             product: productId,
@@ -87,9 +99,19 @@ class UpdateBigOrder {
                             RENT,
                         };
 
+                        console.log(`UpdateBigOrder: pushing new detail into order ${order._id} ->`, newDetail);
                         order.orderDetails.push(newDetail);
+                        if (typeof order.markModified === 'function') {
+                            order.markModified('orderDetails');
+                        }
                     }
-                    await order.save();
+                    try {
+                        const saved = await order.save();
+                        console.log(`UpdateBigOrder: order ${order._id} saved`, saved._id || saved);
+                    } catch (err) {
+                        console.error(`UpdateBigOrder: error saving order ${order._id}:`, err);
+                        throw err;
+                    }
                 }
             }
 
