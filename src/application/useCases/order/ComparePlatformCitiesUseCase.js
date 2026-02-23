@@ -30,6 +30,11 @@ class ComparePlatformCitiesUseCase {
             return isNaN(num) ? 0 : num;
         };
 
+        const toFloatSafe = (val) => {
+            const num = parseFloat(val);
+            return Number.isFinite(num) ? num : 0;
+        };
+
         const cityTotals = {};
 
         // 🔹 Procesar ordersA
@@ -38,16 +43,26 @@ class ComparePlatformCitiesUseCase {
 
             if (!cityTotals[cityName]) {
                 cityTotals[cityName] = {
-                    monthA: { ventas: 0, averias: 0, rentabilidad: 0 },
-                    monthB: { ventas: 0, averias: 0, rentabilidad: 0 },
+                    monthA: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
+                    monthB: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
                 };
             }
 
             for (const detail of order.orderDetails || []) {
-                cityTotals[cityName].monthA.ventas += toIntSafe(detail.VENT);
+                const vent = toIntSafe(detail.VENT);
+                const salePrice = toFloatSafe(detail.salePrice);
+
+                // Ventas en cantidad (unidades)
+                cityTotals[cityName].monthA.ventasCantidad += vent;
+
+                // Ventas en valor (total ingreso)
+                cityTotals[cityName].monthA.ventasValor += vent * salePrice;
+
+                // Averías
                 cityTotals[cityName].monthA.averias += toIntSafe(detail.AVER);
-                cityTotals[cityName].monthA.rentabilidad +=
-                    toIntSafe(detail.salePrice) - toIntSafe(detail.cost);
+
+                // Rentabilidad: sumar campo RENT (ya calculado)
+                cityTotals[cityName].monthA.rentabilidad += toFloatSafe(detail.RENT);
             }
         }
 
@@ -57,16 +72,19 @@ class ComparePlatformCitiesUseCase {
 
             if (!cityTotals[cityName]) {
                 cityTotals[cityName] = {
-                    monthA: { ventas: 0, averias: 0, rentabilidad: 0 },
-                    monthB: { ventas: 0, averias: 0, rentabilidad: 0 },
+                    monthA: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
+                    monthB: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
                 };
             }
 
             for (const detail of order.orderDetails || []) {
-                cityTotals[cityName].monthB.ventas += toIntSafe(detail.VENT);
+                const vent = toIntSafe(detail.VENT);
+                const salePrice = toFloatSafe(detail.salePrice);
+
+                cityTotals[cityName].monthB.ventasCantidad += vent;
+                cityTotals[cityName].monthB.ventasValor += vent * salePrice;
                 cityTotals[cityName].monthB.averias += toIntSafe(detail.AVER);
-                cityTotals[cityName].monthB.rentabilidad +=
-                    toIntSafe(detail.salePrice) - toIntSafe(detail.cost);
+                cityTotals[cityName].monthB.rentabilidad += toFloatSafe(detail.RENT);
             }
         }
 

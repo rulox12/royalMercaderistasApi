@@ -1,15 +1,24 @@
 const OrderRepository = require("../../../infrastructure/persistence/repositories/OrderRepository");
 
 class UpdateReceivedUseCase {
-    static async execute(shopId, date) {
-        const orderRepository = new OrderRepository();
-        // OJO: aquí no uses .lean() en el repositorio, necesitamos un documento Mongoose
-        const order = await orderRepository.getOrderByDateAndShop(date, shopId);
+    constructor(orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+
+    async execute(shopId, date) {
+        // Parse date string to ISO format for MongoDB query
+        const targetDate = new Date(date);
+        if (isNaN(targetDate.getTime())) {
+            throw new Error(`Fecha inválida recibida: ${date}`);
+        }
+
+        const order = await this.orderRepository.getOrderByDateAndShop(targetDate.toISOString(), shopId);
 
         if (!order) {
             throw new Error("No se encontró la orden para la fecha indicada.");
         }
 
+        let hasChanges = false;
         for (const detail of order.orderDetails) {
             const originalRECI = detail.RECI;
             const PEDI = detail.PEDI;
@@ -19,17 +28,20 @@ class UpdateReceivedUseCase {
                     : originalRECI;
 
             if (originalRECI !== newRECI) {
-                detail.RECI = newRECI; // mutamos directamente el subdocumento
+                detail.RECI = newRECI;
                 console.log(`📝 RECI corregido: ${originalRECI} → ${newRECI}`);
+                hasChanges = true;
             }
         }
 
-        // avisamos a Mongoose que el array fue modificado
-        order.markModified("orderDetails");
-        await order.save(); // persistimos en Mongo
+        // Mark modified and save
+        if (hasChanges) {
+            order.markModified("orderDetails");
+            await order.save();
+        }
 
         return order.orderDetails;
     }
 }
 
-module.exports = UpdateReceivedUseCase;
+module.exports = new UpdateReceivedUseCase(new OrderRepository());
