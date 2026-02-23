@@ -117,7 +117,8 @@ const orderController = {
             const { shopId, startDate, endDate } = req.params;
 
             const notReceivedShops = await GetNotReceivedOrdersByShopAndRangeUseCase.execute(shopId, startDate, endDate);
-
+            console.log("Resultado de GetNotReceivedOrdersByShopAndRangeUseCase:", notReceivedShops);
+            
             return res.json({ shopId, startDate, endDate, notReceivedShops });
         } catch (error) {
             console.error(error);

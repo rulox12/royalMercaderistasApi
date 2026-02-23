@@ -1,56 +1,44 @@
-const mongoose = require('mongoose');
-const OrderModel = require('../../../infrastructure/persistence/models/OrderModel');
+const OrderRepository = require('../../../infrastructure/persistence/repositories/OrderRepository');
 
-class CompareOrdersByMonthYearUseCase {
-    async execute(shopId, monthA, yearA, monthB, yearB) {
-        const shopObjId = new mongoose.Types.ObjectId(shopId);
+class UpdateRentabilityUseCase {
+    constructor(orderRepository) {
+        this.orderRepository = orderRepository;
+    }
 
-        // Normaliza a enteros
-        const mA = parseInt(monthA, 10);
-        const yA = parseInt(yearA, 10);
-        const mB = parseInt(monthB, 10);
-        const yB = parseInt(yearB, 10);
+    // shopId: string, date: 'YYYY-MM-DD' or any parsable date string
+    async execute(shopId, date) {
+        const targetDate = new Date(date);
+        if (isNaN(targetDate.getTime())) {
+            throw new Error(`Fecha inválida recibida: ${date}`);
+        }
 
-        // Rango de fechas por mes
-        const startA = new Date(yA, mA - 1, 1);
-        const endA   = new Date(yA, mA, 0, 23, 59, 59, 999);
-        const startB = new Date(yB, mB - 1, 1);
-        const endB   = new Date(yB, mB, 0, 23, 59, 59, 999);
+        // Try to find the order for that shop and date
+        const currentOrder = await this.orderRepository.getOrderByDateAndShop(targetDate.toISOString(), shopId);
+        if (!currentOrder) {
+            throw new Error('No se encontró la orden para la tienda y fecha indicadas.');
+        }
 
-        // Consulta por mes
-        const ordersA = await OrderModel.find({ shop: shopObjId, date: { $gte: startA, $lte: endA } });
-        const ordersB = await OrderModel.find({ shop: shopObjId, date: { $gte: startB, $lte: endB } });
-
-        // Conversión segura
-        const toIntSafe = (val) => {
-            const num = parseInt(val, 10);
-            return isNaN(num) ? 0 : num;
+        // Safe number parser
+        const toFloatSafe = (v) => {
+            const n = parseFloat(v);
+            return Number.isFinite(n) ? n : 0;
         };
 
-        // Suma por órdenes
-        const sumOrders = (orders) => {
-            let ventas = 0, averias = 0, rentabilidad = 0;
-            for (const order of orders) {
-                for (const detail of order.orderDetails || []) {
-                    ventas += toIntSafe(detail.VENT);
-                    averias += toIntSafe(detail.AVER);
-                    rentabilidad += (toIntSafe(detail.salePrice) - toIntSafe(detail.cost));
-                }
-            }
-            return { ventas, averias, rentabilidad };
-        };
+        // Update RENT per detail = (salePrice - cost) * VENT
+        for (const detail of (currentOrder.orderDetails || [])) {
+            const sale = toFloatSafe(detail.salePrice);
+            const cost = toFloatSafe(detail.cost);
+            const vent = toFloatSafe(detail.VENT);
+            const rent = (sale - cost) * vent;
+            detail.RENT = rent.toString();
+        }
 
-        const totalsA = sumOrders(ordersA);
-        const totalsB = sumOrders(ordersB);
+        // Mark modified and persist
+        currentOrder.markModified("orderDetails");
+        await currentOrder.save();
 
-        const finalReport = [
-            { _id: { year: yA, month: mA }, ...totalsA },
-            { _id: { year: yB, month: mB }, ...totalsB }
-        ];
-
-        console.log("📊 Reporte final:", JSON.stringify(finalReport, null, 2));
-        return finalReport;
+        return currentOrder.orderDetails;
     }
 }
 
-module.exports = new CompareOrdersByMonthYearUseCase();
+module.exports = new UpdateRentabilityUseCase(new OrderRepository());
