@@ -4,7 +4,8 @@ const orderController = require('../controllers/orderController');
 
 router.get('/compare-platform-cities', orderController.comparePlatformCities);
 router.get('/compare-platforms', orderController.comparePlatforms);
-router.get('/compare-month-year', orderController.compareByMonthYear);
+router.get('/compare-date-range', orderController.compareByDateRange);
+router.get('/compare-month-year', orderController.compareByDateRange);
 router.get('/sales', orderController.calculateSales);
 router.post('/', orderController.createOrder);
 router.get('/:orderId', orderController.getOrder);

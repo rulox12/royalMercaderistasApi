@@ -9,12 +9,33 @@ class GetShopDashboardUseCase {
         this.listRepository = listRepository;
     }
 
-    async execute(shopId, monthA, yearA, monthB, yearB) {
-        // Get orders for both periods
-        const startA = new Date(yearA, monthA - 1, 1);
-        const endA = new Date(yearA, monthA, 0, 23, 59, 59, 999);
-        const startB = new Date(yearB, monthB - 1, 1);
-        const endB = new Date(yearB, monthB, 0, 23, 59, 59, 999);
+    parseDateStart(dateString) {
+        const parsedDate = new Date(dateString);
+        if (Number.isNaN(parsedDate.getTime())) {
+            throw new Error(`Fecha inválida: ${dateString}`);
+        }
+        parsedDate.setUTCHours(0, 0, 0, 0);
+        return parsedDate;
+    }
+
+    parseDateEnd(dateString) {
+        const parsedDate = new Date(dateString);
+        if (Number.isNaN(parsedDate.getTime())) {
+            throw new Error(`Fecha inválida: ${dateString}`);
+        }
+        parsedDate.setUTCHours(23, 59, 59, 999);
+        return parsedDate;
+    }
+
+    async execute(shopId, startDateA, endDateA, startDateB, endDateB) {
+        const startA = this.parseDateStart(startDateA);
+        const endA = this.parseDateEnd(endDateA);
+        const startB = this.parseDateStart(startDateB);
+        const endB = this.parseDateEnd(endDateB);
+
+        if (startA > endA || startB > endB) {
+            throw new Error('La fecha inicial no puede ser mayor a la fecha final');
+        }
 
         const ordersA = await this.orderRepository.getOrdersByShopAndDateRange(shopId, startA, endA);
         const ordersB = await this.orderRepository.getOrdersByShopAndDateRange(shopId, startB, endB);

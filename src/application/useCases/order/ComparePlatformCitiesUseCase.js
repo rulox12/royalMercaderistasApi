@@ -5,24 +5,36 @@ class ComparePlatformCitiesUseCase {
         this.orderRepository = orderRepository;
     }
 
-    async execute(platformId, monthA, yearA, monthB, yearB) {
-        const startMonthA = new Date(yearA, monthA - 1, 1);
-        const endMonthA = new Date(yearA, monthA, 0, 23, 59, 59);
+    parseDateStart(dateStr) {
+        if (!dateStr) return null;
+        const date = new Date(`${dateStr}T00:00:00Z`);
+        return date;
+    }
 
-        const startMonthB = new Date(yearB, monthB - 1, 1);
-        const endMonthB = new Date(yearB, monthB, 0, 23, 59, 59);
+    parseDateEnd(dateStr) {
+        if (!dateStr) return null;
+        const date = new Date(`${dateStr}T23:59:59.999Z`);
+        return date;
+    }
 
-        // 🔹 Consulta separada para cada mes
+    async execute(platformId, startDateA, endDateA, startDateB, endDateB) {
+        const startA = this.parseDateStart(startDateA);
+        const endA = this.parseDateEnd(endDateA);
+
+        const startB = this.parseDateStart(startDateB);
+        const endB = this.parseDateEnd(endDateB);
+
+        // 🔹 Consulta separada para cada rango de fechas
         const ordersA =
             await this.orderRepository.getOrdersByPlatformAndDateRange(
                 platformId,
-                [{ start: startMonthA, end: endMonthA }]
+                [{ start: startA, end: endA }]
             );
 
         const ordersB =
             await this.orderRepository.getOrdersByPlatformAndDateRange(
                 platformId,
-                [{ start: startMonthB, end: endMonthB }]
+                [{ start: startB, end: endB }]
             );
 
         const toIntSafe = (val) => {
