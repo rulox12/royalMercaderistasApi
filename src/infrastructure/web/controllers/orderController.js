@@ -144,12 +144,61 @@ const orderController = {
         }
     },
 
-    compareByMonthYear: async (req, res) => {
+    compareByDateRange: async (req, res) => {
         try {
-            console.log("📥 Entró a compareByMonthYear con query:", req.query);
+            const {
+                shopId,
+                startDateA,
+                endDateA,
+                startDateB,
+                endDateB,
+                monthA,
+                yearA,
+                monthB,
+                yearB
+            } = req.query;
 
-            const { shopId, monthA, yearA, monthB, yearB } = req.query;
-            const report = await CompareOrdersByMonthYearUseCase.execute(shopId, monthA, yearA, monthB, yearB);
+            if (!shopId) {
+                return res.status(400).json({ error: 'Debe enviar shopId en la query' });
+            }
+
+            let periodStartA = startDateA;
+            let periodEndA = endDateA;
+            let periodStartB = startDateB;
+            let periodEndB = endDateB;
+
+            if ((!periodStartA || !periodEndA || !periodStartB || !periodEndB) && monthA && yearA && monthB && yearB) {
+                const rangeAStart = new Date(Number(yearA), Number(monthA) - 1, 1);
+                const rangeAEnd = new Date(Number(yearA), Number(monthA), 0);
+                const rangeBStart = new Date(Number(yearB), Number(monthB) - 1, 1);
+                const rangeBEnd = new Date(Number(yearB), Number(monthB), 0);
+
+                const toDateParam = (date) => {
+                    const offset = date.getTimezoneOffset();
+                    const adjusted = new Date(date.getTime() - (offset * 60 * 1000));
+                    return adjusted.toISOString().split('T')[0];
+                };
+
+                periodStartA = toDateParam(rangeAStart);
+                periodEndA = toDateParam(rangeAEnd);
+                periodStartB = toDateParam(rangeBStart);
+                periodEndB = toDateParam(rangeBEnd);
+            }
+
+            if (!periodStartA || !periodEndA || !periodStartB || !periodEndB) {
+                return res.status(400).json({
+                    error: 'Debe enviar shopId, startDateA, endDateA, startDateB y endDateB en la query'
+                });
+            }
+
+            const report = await CompareOrdersByMonthYearUseCase.execute(
+                shopId,
+                periodStartA,
+                periodEndA,
+                periodStartB,
+                periodEndB
+            );
+
             res.status(200).json(report);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -178,20 +227,62 @@ const orderController = {
 
     comparePlatformCities: async (req, res) => {
         try {
-            const {platformId, monthA, yearA, monthB, yearB} = req.query;
+            const {
+                platformId,
+                startDateA,
+                endDateA,
+                startDateB,
+                endDateB,
+                monthA,
+                yearA,
+                monthB,
+                yearB
+            } = req.query;
 
-            if (!platformId || !monthA || !yearA || !monthB || !yearB) {
+            if (!platformId) {
                 return res.status(400).json({
-                    error: 'Debe enviar platformId, monthA, yearA, monthB y yearB en la query'
+                    error: 'Debe enviar platformId en la query'
+                });
+            }
+
+            // Backward compatibility: convert month/year to dates if needed
+            let finalStartDateA = startDateA;
+            let finalEndDateA = endDateA;
+            let finalStartDateB = startDateB;
+            let finalEndDateB = endDateB;
+
+            if (!finalStartDateA && monthA && yearA) {
+                const dateA = new Date(Number(yearA), Number(monthA) - 1, 1);
+                finalStartDateA = dateA.toISOString().split('T')[0];
+                const lastDayA = new Date(Number(yearA), Number(monthA), 0);
+                finalEndDateA = lastDayA.toISOString().split('T')[0];
+            }
+
+            if (!finalStartDateB && monthB && yearB) {
+                const dateB = new Date(Number(yearB), Number(monthB) - 1, 1);
+                finalStartDateB = dateB.toISOString().split('T')[0];
+                const lastDayB = new Date(Number(yearB), Number(monthB), 0);
+                finalEndDateB = lastDayB.toISOString().split('T')[0];
+            }
+
+            if (!finalStartDateA || !finalEndDateA || !finalStartDateB || !finalEndDateB) {
+                return res.status(400).json({
+                    error: 'Debe enviar startDateA, endDateA, startDateB, endDateB (o monthA, yearA, monthB, yearB para compatibilidad)'
+                });
+            }
+
+            if (finalStartDateA > finalEndDateA || finalStartDateB > finalEndDateB) {
+                return res.status(400).json({
+                    error: 'Las fechas de inicio no pueden ser posteriores a las fechas de fin'
                 });
             }
 
             const report = await ComparePlatformCitiesUseCase.execute(
                 platformId,
-                Number(monthA),
-                Number(yearA),
-                Number(monthB),
-                Number(yearB)
+                finalStartDateA,
+                finalEndDateA,
+                finalStartDateB,
+                finalEndDateB
             );
 
             return res.json(report);
