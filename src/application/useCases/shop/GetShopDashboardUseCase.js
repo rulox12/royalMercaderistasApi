@@ -99,7 +99,9 @@ class GetShopDashboardUseCase {
                         averiasA: 0,
                         averiasB: 0,
                         ventasA: 0,
+                        ventasAUnidades: 0,
                         ventasB: 0,
+                        ventasBUnidades: 0,
                         rentabilidadA: 0,
                         rentabilidadB: 0,
                     });
@@ -110,6 +112,7 @@ class GetShopDashboardUseCase {
                 prod.recibidosA += reci;
                 prod.averiasA += aver;
                 prod.ventasA += vent * salePrice;
+                prod.ventasAUnidades += vent;
                 prod.rentabilidadA += rent;
             }
         }
@@ -152,7 +155,9 @@ class GetShopDashboardUseCase {
                         averiasA: 0,
                         averiasB: 0,
                         ventasA: 0,
+                        ventasAUnidades: 0,
                         ventasB: 0,
+                        ventasBUnidades: 0,
                         rentabilidadA: 0,
                         rentabilidadB: 0,
                     });
@@ -163,6 +168,7 @@ class GetShopDashboardUseCase {
                 prod.recibidosB += reci;
                 prod.averiasB += aver;
                 prod.ventasB += vent * salePrice;
+                prod.ventasBUnidades += vent;
                 prod.rentabilidadB += rent;
             }
         }

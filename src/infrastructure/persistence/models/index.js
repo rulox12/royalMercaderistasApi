@@ -1,5 +1,6 @@
 require("./UserModel");
 require("./RoleModel");
+require("./CategoryModel");
 require("./ShopModel");
 require("./OrderModel");
 require("./ProductModel");

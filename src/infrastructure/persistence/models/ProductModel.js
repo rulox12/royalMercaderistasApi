@@ -26,6 +26,11 @@ const productSchema = new mongoose.Schema({
     ref: "Supplier",
     required: true,
   },
+  categoryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+    default: null,
+  },
 });
 
 const ProductModel = mongoose.model("Product", productSchema);

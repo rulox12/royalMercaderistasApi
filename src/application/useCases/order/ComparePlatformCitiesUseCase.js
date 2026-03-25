@@ -24,17 +24,24 @@ class ComparePlatformCitiesUseCase {
         const startB = this.parseDateStart(startDateB);
         const endB = this.parseDateEnd(endDateB);
 
+        // 🔹 Determinar cuál rango es más antiguo
+        const isAOlder = startA <= startB;
+        const olderStart = isAOlder ? startA : startB;
+        const olderEnd = isAOlder ? endA : endB;
+        const newerStart = isAOlder ? startB : startA;
+        const newerEnd = isAOlder ? endB : endA;
+
         // 🔹 Consulta separada para cada rango de fechas
-        const ordersA =
+        const ordersOlder =
             await this.orderRepository.getOrdersByPlatformAndDateRange(
                 platformId,
-                [{ start: startA, end: endA }]
+                [{ start: olderStart, end: olderEnd }]
             );
 
-        const ordersB =
+        const ordersNewer =
             await this.orderRepository.getOrdersByPlatformAndDateRange(
                 platformId,
-                [{ start: startB, end: endB }]
+                [{ start: newerStart, end: newerEnd }]
             );
 
         const toIntSafe = (val) => {
@@ -49,14 +56,14 @@ class ComparePlatformCitiesUseCase {
 
         const cityTotals = {};
 
-        // 🔹 Procesar ordersA
-        for (const order of ordersA) {
+        // 🔹 Procesar ordersOlder → monthA (siempre el rango más antiguo)
+        for (const order of ordersOlder) {
             const cityName = order.cityId?.name || "Sin ciudad";
 
             if (!cityTotals[cityName]) {
                 cityTotals[cityName] = {
-                    monthA: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
-                    monthB: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
+                    monthA: { ventasCantidad: 0, ventasValor: 0, averias: 0, averiasValor: 0, rentabilidad: 0 },
+                    monthB: { ventasCantidad: 0, ventasValor: 0, averias: 0, averiasValor: 0, rentabilidad: 0 },
                 };
             }
 
@@ -71,21 +78,23 @@ class ComparePlatformCitiesUseCase {
                 cityTotals[cityName].monthA.ventasValor += vent * salePrice;
 
                 // Averías
-                cityTotals[cityName].monthA.averias += toIntSafe(detail.AVER);
+                const aver = toIntSafe(detail.AVER);
+                cityTotals[cityName].monthA.averias += aver;
+                cityTotals[cityName].monthA.averiasValor += aver * salePrice;
 
                 // Rentabilidad: sumar campo RENT (ya calculado)
                 cityTotals[cityName].monthA.rentabilidad += toFloatSafe(detail.RENT);
             }
         }
 
-        // 🔹 Procesar ordersB
-        for (const order of ordersB) {
+        // 🔹 Procesar ordersNewer → monthB (siempre el rango más reciente)
+        for (const order of ordersNewer) {
             const cityName = order.cityId?.name || "Sin ciudad";
 
             if (!cityTotals[cityName]) {
                 cityTotals[cityName] = {
-                    monthA: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
-                    monthB: { ventasCantidad: 0, ventasValor: 0, averias: 0, rentabilidad: 0 },
+                    monthA: { ventasCantidad: 0, ventasValor: 0, averias: 0, averiasValor: 0, rentabilidad: 0 },
+                    monthB: { ventasCantidad: 0, ventasValor: 0, averias: 0, averiasValor: 0, rentabilidad: 0 },
                 };
             }
 
@@ -95,7 +104,9 @@ class ComparePlatformCitiesUseCase {
 
                 cityTotals[cityName].monthB.ventasCantidad += vent;
                 cityTotals[cityName].monthB.ventasValor += vent * salePrice;
-                cityTotals[cityName].monthB.averias += toIntSafe(detail.AVER);
+                const aver = toIntSafe(detail.AVER);
+                cityTotals[cityName].monthB.averias += aver;
+                cityTotals[cityName].monthB.averiasValor += aver * salePrice;
                 cityTotals[cityName].monthB.rentabilidad += toFloatSafe(detail.RENT);
             }
         }
