@@ -14,7 +14,10 @@ class ProductRepository {
 
   async getAll() {
     try {
-      const products = await ProductModel.find().populate('supplierId');
+      const products = await ProductModel.find()
+        .sort({ position: 1 })
+        .collation({ locale: 'en', numericOrdering: true })
+        .populate('supplierId');
       return products;
     } catch (error) {
       throw new Error(`Error while fetching products: ${error.message}`);

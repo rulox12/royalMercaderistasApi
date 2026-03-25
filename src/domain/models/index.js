@@ -1,5 +1,6 @@
 require("./User");
 require("./Role");
+require("./Category");
 require("./Shop");
 require("./Order");
 require("./Product");
