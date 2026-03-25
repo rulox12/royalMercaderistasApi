@@ -21,8 +21,29 @@ require("./src/infrastructure/persistence/mongoose");
 const cors = require("cors");
 const app = express();
 
+const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "https://royalmercaderistasdemo20260310.loca.lt",
+    "https://paying-eugene-wishlist-lucy.trycloudflare.com",
+];
+
 const corsOptions = {
-  origin: "*",
+  origin(origin, callback) {
+    // Allow non-browser requests (curl, server-to-server) with no Origin header.
+    if (!origin) return callback(null, true);
+
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".loca.lt") ||
+      origin.endsWith(".trycloudflare.com")
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS origin not allowed"));
+  },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
