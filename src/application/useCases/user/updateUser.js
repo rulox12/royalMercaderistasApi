@@ -14,11 +14,26 @@ class UpdateUserUseCase {
         throw new Error("Usuario no encontrado");
       }
 
-      if (updateFields.password) {
-        updateFields.password = await bcrypt.hash(updateFields.password, 10);
+      // Filtrar solo campos con valor definido y no vacío
+      const fieldsToUpdate = {};
+      Object.keys(updateFields).forEach((key) => {
+        const value = updateFields[key];
+        // Nunca actualizar contraseña desde aquí - protección máxima
+        if (key === 'password') {
+          return;
+        }
+        // Incluir el campo si tiene valor definido, no es null, y no es string vacío
+        if (value !== undefined && value !== null && value !== '') {
+          fieldsToUpdate[key] = value;
+        }
+      });
+
+      // Contraseña SOLO se actualiza si viene no vacía Y tiene al menos 8 caracteres
+      if (updateFields.password && updateFields.password.trim().length >= 8) {
+        fieldsToUpdate.password = await bcrypt.hash(updateFields.password.trim(), 10);
       }
 
-      Object.assign(existingUser, updateFields);
+      Object.assign(existingUser, fieldsToUpdate);
 
       const updatedUser = await this.userRepository.update(userId, existingUser);
 

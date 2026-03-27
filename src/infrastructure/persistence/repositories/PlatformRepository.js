@@ -1,4 +1,5 @@
 const PlatformModel = require("../models/PlatformModel");
+const { sortByPlatformName } = require("../../../application/utils/platformOrder");
 
 class PlatformRepository {
   async create(role) {
@@ -19,7 +20,7 @@ class PlatformRepository {
   async getAll() {
     try {
       const platforms = await PlatformModel.find();
-      return platforms;
+      return sortByPlatformName(platforms, (platform) => platform?.name);
     } catch (error) {
       throw new Error(`Error while fetching platforms: ${error.message}`);
     }
