@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
         ref: "Role",
         required: true,
     },
+    canViewLocalDashboard: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 

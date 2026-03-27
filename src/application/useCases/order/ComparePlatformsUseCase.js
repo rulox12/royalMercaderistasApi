@@ -1,4 +1,5 @@
 const OrderRepository = require("../../../infrastructure/persistence/repositories/OrderRepository");
+const { sortByPlatformName } = require("../../utils/platformOrder");
 
 class ComparePlatformsUseCase {
     constructor(orderRepository) {
@@ -33,7 +34,7 @@ class ComparePlatformsUseCase {
             }
         }
 
-        return Object.values(platformTotals);
+        return sortByPlatformName(Object.values(platformTotals), (platform) => platform?.platform);
     }
 }
 
