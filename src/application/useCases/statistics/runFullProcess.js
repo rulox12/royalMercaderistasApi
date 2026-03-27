@@ -1,5 +1,9 @@
 const path = require("path");
 const { spawn } = require("child_process");
+const dotenv = require("dotenv");
+
+// Cargar .env en el contexto actual
+dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 
 class RunFullProcessUseCase {
   isValidDate(value) {
@@ -8,8 +12,16 @@ class RunFullProcessUseCase {
 
   runNodeScript(scriptPath, args) {
     return new Promise((resolve, reject) => {
+      // Pasar las variables de entorno actuales al proceso hijo
+      const env = {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || "production",
+      };
+
       const child = spawn(process.execPath, [scriptPath, ...args], {
-        cwd: path.resolve(__dirname, "../../../.."),
+        cwd: path.resolve(__dirname, "../../../../"),
+        env,
+        stdio: ["ignore", "pipe", "pipe"],
       });
 
       let stdout = "";
@@ -35,10 +47,16 @@ class RunFullProcessUseCase {
 
         reject(
           new Error(
-            `Script falló con código ${code}. ${stderr || stdout || "Sin detalle"}`
+            `Script falló con código ${code}. Stderr: ${stderr || stdout || "Sin detalle"}`
           )
         );
       });
+
+      // Timeout de 5 minutos por script
+      setTimeout(() => {
+        child.kill();
+        reject(new Error("Script excedió timeout de 5 minutos"));
+      }, 5 * 60 * 1000);
     });
   }
 
@@ -57,35 +75,54 @@ class RunFullProcessUseCase {
 
     const scripts = [
       {
-        name: "sales",
-        file: path.resolve(__dirname, "../../../scripts/migration/calculateSalesRange.js"),
+        name: "ventas",
+        file: path.resolve(__dirname, "../../../../src/scripts/migration/calculateSalesRange.js"),
       },
       {
-        name: "received",
-        file: path.resolve(__dirname, "../../../scripts/migration/calculateReceivedRange.js"),
+        name: "recibidas",
+        file: path.resolve(__dirname, "../../../../src/scripts/migration/calculateReceivedRange.js"),
       },
       {
-        name: "rentability",
-        file: path.resolve(__dirname, "../../../scripts/migration/calculateRentabilityRange.js"),
+        name: "rentabilidad",
+        file: path.resolve(__dirname, "../../../../src/scripts/migration/calculateRentabilityRange.js"),
       },
     ];
 
     const output = [];
+    let successCount = 0;
+    let errorCount = 0;
 
     for (const script of scripts) {
-      const result = await this.runNodeScript(script.file, [startDate, endDate]);
-      output.push({
-        step: script.name,
-        code: result.code,
-        stdout: result.stdout,
-        stderr: result.stderr,
-      });
+      try {
+        const result = await this.runNodeScript(script.file, [startDate, endDate]);
+        output.push({
+          step: script.name,
+          status: "✅ Éxito",
+          ok: true,
+          stdout: result.stdout,
+        });
+        successCount++;
+      } catch (error) {
+        output.push({
+          step: script.name,
+          status: "❌ Falló",
+          ok: false,
+          error: error.message,
+        });
+        errorCount++;
+      }
     }
 
     return {
-      ok: true,
+      ok: successCount > 0,
       startDate,
       endDate,
+      summary: {
+        total: scripts.length,
+        success: successCount,
+        failed: errorCount,
+        message: `${successCount} completado(s), ${errorCount} fallido(s)`,
+      },
       steps: output,
     };
   }
