@@ -17,7 +17,9 @@ const statisticsController = {
             const response = await RunFullProcessUseCase.execute(startDate, endDate);
             res.status(200).json(response);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            res.status(400).json({
+                error: error?.message || 'Error ejecutando full process',
+            });
         }
     },
 };
