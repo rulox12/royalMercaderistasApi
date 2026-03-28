@@ -6,6 +6,16 @@ const dotenv = require("dotenv");
 dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 
 class RunFullProcessUseCase {
+  getScriptTimeoutMs() {
+    const value = Number(process.env.FULL_PROCESS_SCRIPT_TIMEOUT_MS);
+    if (Number.isFinite(value) && value > 0) {
+      return value;
+    }
+
+    // 20 minutos por script por defecto en productivo.
+    return 20 * 60 * 1000;
+  }
+
   isValidDate(value) {
     return /^\d{4}-\d{2}-\d{2}$/.test(value);
   }
@@ -26,6 +36,18 @@ class RunFullProcessUseCase {
 
       let stdout = "";
       let stderr = "";
+      const timeoutMs = this.getScriptTimeoutMs();
+      let settled = false;
+
+      const timeoutId = setTimeout(() => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        child.kill();
+        reject(new Error(`Script excedió timeout de ${Math.floor(timeoutMs / 60000)} minutos`));
+      }, timeoutMs);
 
       child.stdout.on("data", (chunk) => {
         stdout += chunk.toString();
@@ -36,10 +58,23 @@ class RunFullProcessUseCase {
       });
 
       child.on("error", (error) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        clearTimeout(timeoutId);
         reject(error);
       });
 
       child.on("close", (code) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        clearTimeout(timeoutId);
+
         if (code === 0) {
           resolve({ stdout, stderr, code });
           return;
@@ -51,12 +86,6 @@ class RunFullProcessUseCase {
           )
         );
       });
-
-      // Timeout de 5 minutos por script
-      setTimeout(() => {
-        child.kill();
-        reject(new Error("Script excedió timeout de 5 minutos"));
-      }, 5 * 60 * 1000);
     });
   }
 
@@ -93,12 +122,15 @@ class RunFullProcessUseCase {
     let errorCount = 0;
 
     for (const script of scripts) {
+      const startedAt = Date.now();
+
       try {
         const result = await this.runNodeScript(script.file, [startDate, endDate]);
         output.push({
           step: script.name,
           status: "✅ Éxito",
           ok: true,
+          durationMs: Date.now() - startedAt,
           stdout: result.stdout,
         });
         successCount++;
@@ -107,6 +139,7 @@ class RunFullProcessUseCase {
           step: script.name,
           status: "❌ Falló",
           ok: false,
+          durationMs: Date.now() - startedAt,
           error: error.message,
         });
         errorCount++;
