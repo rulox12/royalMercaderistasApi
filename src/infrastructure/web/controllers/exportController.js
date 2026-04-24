@@ -185,9 +185,13 @@ const exportController = {
                             const totalAVER = parseInt(orderDetail.AVER) || 0;
                             const totalLOTE = parseInt(orderDetail.LOTE) || 0;
                             const totalPEDI = parseInt(orderDetail.PEDI) || 0;
-                            const totalRECI = parseInt(orderDetail.RECI) || 0;
+                            const reciRaw = orderDetail.RECI;
+                            const hasExplicitRECI = reciRaw !== undefined
+                                && reciRaw !== null
+                                && String(reciRaw).trim() !== '';
+                            const totalRECI = hasExplicitRECI ? (parseInt(reciRaw, 10) || 0) : 0;
 
-                            const pedidoRecibido = totalRECI > 0 ? totalRECI : totalPEDI;
+                            const pedidoRecibido = hasExplicitRECI ? totalRECI : totalPEDI;
 
                             const totalFINAL = totalINVE + pedidoRecibido - totalAVER;
 
@@ -377,6 +381,7 @@ const exportController = {
                         let totalLOTE = 0;
                         let totalPEDI = 0;
                         let totalRECI = 0;
+                        let hasExplicitRECI = false;
                         let totalFINAL = 0;
                         let totalVENTA = 0;
 
@@ -389,10 +394,14 @@ const exportController = {
                             totalAVER = parseInt(orderDetail.AVER) || 0;
                             totalLOTE = parseInt(orderDetail.LOTE) || 0;
                             totalPEDI = parseInt(orderDetail.PEDI) || 0;
-                            totalRECI = parseInt(orderDetail.RECI) || 0;
+                            const reciRaw = orderDetail.RECI;
+                            hasExplicitRECI = reciRaw !== undefined
+                                && reciRaw !== null
+                                && String(reciRaw).trim() !== '';
+                            totalRECI = hasExplicitRECI ? (parseInt(reciRaw, 10) || 0) : 0;
                         }
 
-                        const pedidoRecibido = totalRECI > 0 ? totalRECI : totalPEDI;
+                        const pedidoRecibido = hasExplicitRECI ? totalRECI : totalPEDI;
 
                         totalFINAL = totalINVE + pedidoRecibido - totalAVER;
 
