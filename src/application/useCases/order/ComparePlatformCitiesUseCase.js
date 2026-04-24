@@ -70,6 +70,7 @@ class ComparePlatformCitiesUseCase {
             for (const detail of order.orderDetails || []) {
                 const vent = toIntSafe(detail.VENT);
                 const salePrice = toFloatSafe(detail.salePrice);
+                const cost = toFloatSafe(detail.cost);
 
                 // Ventas en cantidad (unidades)
                 cityTotals[cityName].monthA.ventasCantidad += vent;
@@ -80,7 +81,7 @@ class ComparePlatformCitiesUseCase {
                 // Averías
                 const aver = toIntSafe(detail.AVER);
                 cityTotals[cityName].monthA.averias += aver;
-                cityTotals[cityName].monthA.averiasValor += aver * salePrice;
+                cityTotals[cityName].monthA.averiasValor += aver * cost;
 
                 // Rentabilidad: sumar campo RENT (ya calculado)
                 cityTotals[cityName].monthA.rentabilidad += toFloatSafe(detail.RENT);
@@ -101,12 +102,13 @@ class ComparePlatformCitiesUseCase {
             for (const detail of order.orderDetails || []) {
                 const vent = toIntSafe(detail.VENT);
                 const salePrice = toFloatSafe(detail.salePrice);
+                const cost = toFloatSafe(detail.cost);
 
                 cityTotals[cityName].monthB.ventasCantidad += vent;
                 cityTotals[cityName].monthB.ventasValor += vent * salePrice;
                 const aver = toIntSafe(detail.AVER);
                 cityTotals[cityName].monthB.averias += aver;
-                cityTotals[cityName].monthB.averiasValor += aver * salePrice;
+                cityTotals[cityName].monthB.averiasValor += aver * cost;
                 cityTotals[cityName].monthB.rentabilidad += toFloatSafe(detail.RENT);
             }
         }
