@@ -70,7 +70,9 @@ class GetShopDashboardUseCase {
                 const aver = toIntSafe(detail.AVER);
                 const vent = toIntSafe(detail.VENT);
                 const salePrice = toFloatSafe(detail.salePrice);
+                const cost = toFloatSafe(detail.cost);
                 const rent = toFloatSafe(detail.RENT);
+                const netRent = rent - (aver * cost);
 
                 // Update indicators
                 indicators.pedidos.monthA.unidades += pedi;
@@ -80,18 +82,19 @@ class GetShopDashboardUseCase {
                 indicators.recibidos.monthA.valor += reci * salePrice;
 
                 indicators.averias.monthA.unidades += aver;
-                indicators.averias.monthA.valor += aver * salePrice;
+                indicators.averias.monthA.valor += aver * cost;
 
                 indicators.ventas.monthA.unidades += vent;
                 indicators.ventas.monthA.valor += vent * salePrice;
 
-                indicators.rentabilidad.monthA.valor += rent;
+                indicators.rentabilidad.monthA.valor += netRent;
 
                 // Track product data
                 if (!productMap.has(productId)) {
                     const productName = detail.product?.name || 'Producto desconocido';
                     productMap.set(productId, {
                         name: productName,
+                        position: detail.product?.position || '',
                         pedidosA: 0,
                         pedidosB: 0,
                         recibidosA: 0,
@@ -113,7 +116,7 @@ class GetShopDashboardUseCase {
                 prod.averiasA += aver;
                 prod.ventasA += vent * salePrice;
                 prod.ventasAUnidades += vent;
-                prod.rentabilidadA += rent;
+                prod.rentabilidadA += netRent;
             }
         }
 
@@ -126,7 +129,9 @@ class GetShopDashboardUseCase {
                 const aver = toIntSafe(detail.AVER);
                 const vent = toIntSafe(detail.VENT);
                 const salePrice = toFloatSafe(detail.salePrice);
+                const cost = toFloatSafe(detail.cost);
                 const rent = toFloatSafe(detail.RENT);
+                const netRent = rent - (aver * cost);
 
                 // Update indicators
                 indicators.pedidos.monthB.unidades += pedi;
@@ -136,18 +141,19 @@ class GetShopDashboardUseCase {
                 indicators.recibidos.monthB.valor += reci * salePrice;
 
                 indicators.averias.monthB.unidades += aver;
-                indicators.averias.monthB.valor += aver * salePrice;
+                indicators.averias.monthB.valor += aver * cost;
 
                 indicators.ventas.monthB.unidades += vent;
                 indicators.ventas.monthB.valor += vent * salePrice;
 
-                indicators.rentabilidad.monthB.valor += rent;
+                indicators.rentabilidad.monthB.valor += netRent;
 
                 // Track product data
                 if (!productMap.has(productId)) {
                     const productName = detail.product?.name || 'Producto desconocido';
                     productMap.set(productId, {
                         name: productName,
+                        position: detail.product?.position || '',
                         pedidosA: 0,
                         pedidosB: 0,
                         recibidosA: 0,
@@ -164,12 +170,15 @@ class GetShopDashboardUseCase {
                 }
 
                 const prod = productMap.get(productId);
+                if (!prod.position && detail.product?.position) {
+                    prod.position = detail.product.position;
+                }
                 prod.pedidosB += pedi;
                 prod.recibidosB += reci;
                 prod.averiasB += aver;
                 prod.ventasB += vent * salePrice;
                 prod.ventasBUnidades += vent;
-                prod.rentabilidadB += rent;
+                prod.rentabilidadB += netRent;
             }
         }
 

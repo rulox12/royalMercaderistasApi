@@ -4,6 +4,7 @@ const DeleteCategoryUseCase = require('../../../application/useCases/category/de
 const UpdateCategoryUseCase = require('../../../application/useCases/category/updateCategory');
 const AddProductToCategoryUseCase = require('../../../application/useCases/category/addProductToCategory');
 const RemoveProductFromCategoryUseCase = require('../../../application/useCases/category/removeProductFromCategory');
+const GetCategorySalesSummaryUseCase = require('../../../application/useCases/category/getCategorySalesSummary');
 
 const categoryController = {
   createCategory: async (req, res) => {
@@ -20,6 +21,21 @@ const categoryController = {
     try {
       const categories = await GetCategoriesUseCase.execute();
       res.status(200).json(categories);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  getCategorySalesSummary: async (req, res) => {
+    try {
+      const { startDate, endDate, categoryId } = req.query;
+
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'startDate y endDate son obligatorias' });
+      }
+
+      const summary = await GetCategorySalesSummaryUseCase.execute(startDate, endDate, categoryId);
+      res.status(200).json(summary);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
