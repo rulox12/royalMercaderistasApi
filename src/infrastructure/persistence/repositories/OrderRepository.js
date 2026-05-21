@@ -162,6 +162,12 @@ class OrderRepository {
         }).populate('orderDetails.product').exec();
     }
 
+    async getOrdersByDateRange(startDate, endDate) {
+        return OrderModel.find({
+            date: { $gte: startDate, $lte: endDate }
+        }).populate('orderDetails.product').exec();
+    }
+
     async getOrdersByDateRangeWithPlatform(startDate, endDate) {
         return OrderModel.find({
             date: { $gte: startDate, $lte: endDate }

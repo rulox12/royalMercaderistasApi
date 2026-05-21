@@ -42,9 +42,7 @@ class CalculateSalesUseCase {
             const averiaInicial = parseFloat(currentDetail.AVER || "0");
             const recibidoInicial = parseFloat(currentDetail.RECI || "0");
 
-            let venta = inveInicial - averiaInicial + recibidoInicial  - inveFinal;
-            // Si la venta es negativa, asigna 0
-            venta = venta < 0 ? 0 : venta;
+            const venta = inveInicial - averiaInicial + recibidoInicial - inveFinal;
 
             return {
                 product: currentDetail.product,
