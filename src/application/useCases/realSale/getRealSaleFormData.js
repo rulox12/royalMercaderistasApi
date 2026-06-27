@@ -75,7 +75,8 @@ class GetRealSaleFormDataUseCase {
             const categoryId = category._id.toString();
             const categoryExisting = existingByCategoryId.get(categoryId);
 
-            const products = (category.products || []).map((product) => {
+            const products = (category.products || [])
+                .map((product) => {
                 const productId = product._id.toString();
                 const productExisting = existingByProductId.get(productId);
                 const realSale = salesByProductId.get(productId) || 0;
@@ -87,12 +88,14 @@ class GetRealSaleFormDataUseCase {
                     _id: product._id,
                     name: product.name,
                     displayName: product.displayName,
+                    position: toNumber(product.position),
                     realSale,
                     calculatedSale,
                     unitDifference,
                     percentageDifference,
                 };
-            });
+                })
+                .sort((a, b) => a.position - b.position);
 
             const totalRealSale = products.reduce((sum, product) => sum + toNumber(product.realSale), 0);
             const totalCalculatedSale = products.reduce((sum, product) => sum + toNumber(product.calculatedSale), 0);
