@@ -15,6 +15,7 @@ const supplierRoutes = require("./src/infrastructure/web/routes/supplierRoutes")
 const statisticsRoutes = require("./src/infrastructure/web/routes/statisticsRoutes")
 const exportRoutes = require("./src/infrastructure/web/routes/exportRoutes")
 const categoryRoutes = require("./src/infrastructure/web/routes/categoryRoutes")
+const realSaleRoutes = require("./src/infrastructure/web/routes/realSaleRoutes")
 const jobs = require("./src/application/job/jobScheduler");
 
 require("./src/infrastructure/persistence/mongoose");
@@ -48,6 +49,7 @@ app.use('/api/suppliers', supplierRoutes)
 app.use('/api/statistics', statisticsRoutes)
 app.use('/api/exports', exportRoutes)
 app.use('/api/categories', categoryRoutes)
+app.use('/api/real-sales', realSaleRoutes)
 
 jobs();
 

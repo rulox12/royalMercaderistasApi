@@ -9,3 +9,4 @@ require("./City");
 require("./List");
 require("./Supplier");
 require("./BigOrder");
+require("./RealSale");

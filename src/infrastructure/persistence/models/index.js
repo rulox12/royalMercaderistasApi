@@ -10,3 +10,4 @@ require("./ListModel");
 require("./ListProductModel");
 require("./SupplierModel");
 require("./BigOrderModel");
+require("./RealSaleModel");
