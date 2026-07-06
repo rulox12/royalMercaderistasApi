@@ -9,8 +9,8 @@ const GetCategorySalesSummaryUseCase = require('../../../application/useCases/ca
 const categoryController = {
   createCategory: async (req, res) => {
     try {
-      const { name } = req.body;
-      const created = await CreateCategoryUseCase.execute(name);
+      const { name, groupForSale = true } = req.body;
+      const created = await CreateCategoryUseCase.execute(name, groupForSale);
       res.status(201).json(created);
     } catch (error) {
       res.status(500).json({ error: error.message });

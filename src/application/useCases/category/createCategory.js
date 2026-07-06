@@ -6,8 +6,8 @@ class CreateCategoryUseCase {
     this.categoryRepository = categoryRepository;
   }
 
-  async execute(name) {
-    const category = new Category(null, name);
+  async execute(name, groupForSale = true) {
+    const category = new Category(null, name, groupForSale);
     return this.categoryRepository.create(category);
   }
 }
