@@ -6,6 +6,10 @@ const categorySchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  groupForSale: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const CategoryModel = mongoose.model("Category", categorySchema);
