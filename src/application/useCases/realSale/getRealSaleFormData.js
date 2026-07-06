@@ -15,6 +15,84 @@ const toPct = (realSale, calculatedSale) => {
     return Number((((realSale - calculatedSale) / calculatedSale) * 100).toFixed(2));
 };
 
+const buildProductState = ({ product, productExisting, calculatedSale }) => {
+    const realSale = toNumber(productExisting?.realSale);
+    const unitDifference = realSale - calculatedSale;
+
+    return {
+        _id: product._id,
+        name: product.name,
+        displayName: product.displayName,
+        position: toNumber(product.position),
+        realSale,
+        calculatedSale,
+        unitDifference,
+        percentageDifference: toPct(realSale, calculatedSale),
+    };
+};
+
+const distributeProductsByCategorySale = (products, categoryRealSale) => {
+    const totalCalculatedSale = products.reduce((sum, product) => sum + toNumber(product.calculatedSale), 0);
+    const totalRealSale = Math.max(0, Math.round(toNumber(categoryRealSale)));
+
+    const allocatedByProductId = {};
+
+    if (products.length > 0) {
+        if (totalCalculatedSale > 0) {
+            const weighted = products.map((product) => {
+                const productCalculatedSale = toNumber(product.calculatedSale);
+                const raw = (productCalculatedSale / totalCalculatedSale) * totalRealSale;
+                const base = Math.floor(raw);
+
+                return {
+                    productId: product._id,
+                    raw,
+                    base,
+                    fraction: raw - base,
+                };
+            });
+
+            const baseSum = weighted.reduce((sum, item) => sum + item.base, 0);
+            const remainder = totalRealSale - baseSum;
+
+            weighted.sort((a, b) => b.fraction - a.fraction);
+
+            weighted.forEach((item, index) => {
+                allocatedByProductId[item.productId] = item.base + (index < remainder ? 1 : 0);
+            });
+        } else {
+            const base = Math.floor(totalRealSale / products.length);
+            let remainder = totalRealSale - (base * products.length);
+
+            products.forEach((product) => {
+                const extra = remainder > 0 ? 1 : 0;
+                allocatedByProductId[product._id] = base + extra;
+                remainder -= extra;
+            });
+        }
+    }
+
+    const distributedProducts = products.map((product) => {
+        const productCalculatedSale = toNumber(product.calculatedSale);
+        const productRealSale = allocatedByProductId[product._id] || 0;
+        const unitDifference = productRealSale - productCalculatedSale;
+
+        return {
+            ...product,
+            realSale: productRealSale,
+            unitDifference,
+            percentageDifference: toPct(productRealSale, productCalculatedSale),
+        };
+    });
+
+    return {
+        realSale: totalRealSale,
+        unitDifference: totalRealSale - totalCalculatedSale,
+        percentageDifference: toPct(totalRealSale, totalCalculatedSale),
+        products: distributedProducts,
+    };
+};
+
 class GetRealSaleFormDataUseCase {
     constructor(categoryRepository, orderRepository, realSaleRepository) {
         this.categoryRepository = categoryRepository;
@@ -74,41 +152,51 @@ class GetRealSaleFormDataUseCase {
         const normalizedCategories = (categories || []).map((category) => {
             const categoryId = category._id.toString();
             const categoryExisting = existingByCategoryId.get(categoryId);
+            const groupForSale = category.groupForSale !== false;
 
             const products = (category.products || [])
                 .map((product) => {
-                const productId = product._id.toString();
-                const productExisting = existingByProductId.get(productId);
-                const realSale = salesByProductId.get(productId) || 0;
-                const calculatedSale = toNumber(productExisting?.calculatedSale);
-                const unitDifference = realSale - calculatedSale;
-                const percentageDifference = toPct(realSale, calculatedSale);
+                    const productId = product._id.toString();
+                    const productExisting = existingByProductId.get(productId);
+                    const calculatedSale = salesByProductId.get(productId) || 0;
 
-                return {
-                    _id: product._id,
-                    name: product.name,
-                    displayName: product.displayName,
-                    position: toNumber(product.position),
-                    realSale,
-                    calculatedSale,
-                    unitDifference,
-                    percentageDifference,
-                };
+                    return buildProductState({
+                        product,
+                        productExisting,
+                        calculatedSale,
+                    });
                 })
                 .sort((a, b) => a.position - b.position);
 
-            const totalRealSale = products.reduce((sum, product) => sum + toNumber(product.realSale), 0);
             const totalCalculatedSale = products.reduce((sum, product) => sum + toNumber(product.calculatedSale), 0);
-            const totalUnitDifference = totalRealSale - totalCalculatedSale;
-            const totalPercentageDifference = toPct(totalRealSale, totalCalculatedSale);
+
+            if (groupForSale) {
+                const totalExistingProductRealSale = products.reduce((sum, product) => sum + toNumber(product.realSale), 0);
+                const categoryRealSale = toNumber(categoryExisting?.realSale) || totalExistingProductRealSale;
+                const groupedTotals = distributeProductsByCategorySale(products, categoryRealSale);
+
+                return {
+                    _id: category._id,
+                    name: category.name,
+                    groupForSale,
+                    realSale: groupedTotals.realSale,
+                    calculatedSale: totalCalculatedSale,
+                    unitDifference: groupedTotals.unitDifference,
+                    percentageDifference: groupedTotals.percentageDifference,
+                    products: groupedTotals.products,
+                };
+            }
+
+            const totalRealSale = products.reduce((sum, product) => sum + toNumber(product.realSale), 0);
 
             return {
                 _id: category._id,
                 name: category.name,
-                realSale: toNumber(categoryExisting?.realSale) || totalRealSale,
-                calculatedSale: toNumber(categoryExisting?.calculatedSale) || totalCalculatedSale,
-                unitDifference: toNumber(categoryExisting?.unitDifference) || totalUnitDifference,
-                percentageDifference: toNumber(categoryExisting?.percentageDifference) || totalPercentageDifference,
+                groupForSale,
+                realSale: totalRealSale,
+                calculatedSale: totalCalculatedSale,
+                unitDifference: totalRealSale - totalCalculatedSale,
+                percentageDifference: toPct(totalRealSale, totalCalculatedSale),
                 products,
             };
         });
