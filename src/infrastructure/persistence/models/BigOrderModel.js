@@ -19,6 +19,18 @@ const BigOrderSchema = new Schema({
         type: String,
         ref: "Platform",
     },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+    },
+    updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+    },
+}, {
+    timestamps: true,
 });
 
 BigOrderSchema.pre('findOne', function (next) {

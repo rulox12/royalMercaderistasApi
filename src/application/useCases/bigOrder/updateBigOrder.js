@@ -117,6 +117,7 @@ class UpdateBigOrder {
 
             await this.bigOrderRepository.update(bigOrderId, {
                 status: "Approved",
+                updatedBy: userId || null,
             });
         } catch (error) {
             throw new Error(`Error updating BigOrder: ${error.message}`);
