@@ -13,9 +13,9 @@ const path = require('path');
 const bigOrderController = {
     createBigOrder: async (req, res) => {
         try {
-            const {date, cityId, platformId} = req.body;
+            const {date, cityId, platformId, userId} = req.body;
 
-            const createdBigOrder = await CreateBigOrderUseCase.execute(date, cityId, platformId);
+            const createdBigOrder = await CreateBigOrderUseCase.execute(date, cityId, platformId, userId);
             const orders = await GetOrdersByDateWithDetails.execute(date, cityId, platformId);
 
             const orderIds = orders?.map(order => order.order._id);
@@ -35,8 +35,7 @@ const bigOrderController = {
         try {
             const {bigOrderId, products, userId} = req.body;
 
-            const bigOrder = await GetBigOrderUseCase.execute(bigOrderId);
-            await UpdateBigOrderUserCase.execute(bigOrder, products, userId);
+            await UpdateBigOrderUserCase.execute(bigOrderId, products, userId);
 
             res.status(201).json({message: "Actualizado con exito"});
         } catch (error) {
