@@ -11,15 +11,24 @@ class BigOrderRepository {
     }
 
     async findById(orderId) {
-        return BigOrderModel.findById(orderId).exec();
+        return BigOrderModel.findById(orderId)
+            .populate('createdBy')
+            .populate('updatedBy')
+            .exec();
     }
 
     async findByDate(date, cityId, platformId) {
-        return BigOrderModel.findOne({date, cityId, platformId}).exec();
+        return BigOrderModel.findOne({date, cityId, platformId})
+            .populate('createdBy')
+            .populate('updatedBy')
+            .exec();
     }
 
     async find(filters) {
-        return BigOrderModel.findOne(filters).exec();
+        return BigOrderModel.findOne(filters)
+            .populate('createdBy')
+            .populate('updatedBy')
+            .exec();
     }
 
     async getAll(filters, page = 1, limit = 30) {
@@ -31,7 +40,9 @@ class BigOrderRepository {
                 .skip(skip)
                 .limit(limit)
                 .populate('cityId')
-                .populate('platformId');
+                .populate('platformId')
+                .populate('createdBy')
+                .populate('updatedBy');
 
             const totalBigOrders = await BigOrderModel.countDocuments(filters);
 
@@ -56,7 +67,9 @@ class BigOrderRepository {
 
     async getOrdersByDate(date) {
         try {
-            const orders = await BigOrderModel.find({date});
+            const orders = await BigOrderModel.find({date})
+                .populate('createdBy')
+                .populate('updatedBy');
             return orders;
         } catch (error) {
             throw new Error(`Error while fetching orders: ${error.message}`);
@@ -69,7 +82,9 @@ class BigOrderRepository {
                 bigOrderId,
                 updatedFields,
                 {new: true}
-            );
+            )
+                .populate('createdBy')
+                .populate('updatedBy');
 
             return updatedBigOrder;
         } catch (error) {
