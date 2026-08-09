@@ -56,7 +56,19 @@ const OrderSchema = new Schema({
     details: {
         type: String,
         default: '',
-    }
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+    },
+    updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+    },
+}, {
+    timestamps: true,
 });
 
 const OrderModel = mongoose.model('Order', OrderSchema);

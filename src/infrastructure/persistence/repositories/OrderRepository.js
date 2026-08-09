@@ -8,7 +8,11 @@ class OrderRepository {
     }
 
     async findById(orderId) {
-        return OrderModel.findById(orderId).populate('orderDetails.product').exec();
+        return OrderModel.findById(orderId)
+            .populate('orderDetails.product')
+            .populate('createdBy')
+            .populate('updatedBy')
+            .exec();
     }
 
     async getAll(filters, page = 1, limit = 30, shopId = '') {
@@ -28,6 +32,8 @@ class OrderRepository {
                 .populate('cityId')
                 .populate('shop')
                 .populate('user')
+                .populate('createdBy')
+                .populate('updatedBy')
                 .populate('orderDetails.product');
 
             const totalOrders = await OrderModel.countDocuments(filters);
@@ -43,7 +49,11 @@ class OrderRepository {
     }
 
     async getOrderByDateAndShop(date, shop) {
-        return OrderModel.findOne({ date, shop }).populate('orderDetails.product').exec();
+        return OrderModel.findOne({ date, shop })
+            .populate('orderDetails.product')
+            .populate('createdBy')
+            .populate('updatedBy')
+            .exec();
     }
 
     async getOrdersByDate(date) {
@@ -80,7 +90,11 @@ class OrderRepository {
                 orderId,
                 updatedFields,
                 { new: true }
-            ).populate('orderDetails.product').exec();
+            )
+                .populate('orderDetails.product')
+                .populate('createdBy')
+                .populate('updatedBy')
+                .exec();
 
             return updatedOrder;
         } catch (error) {
