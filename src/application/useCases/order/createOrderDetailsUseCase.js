@@ -7,7 +7,7 @@ class CreateOrderDetailsUseCase {
         this.orderRepository = orderRepository;
     }
 
-    async execute(orderId, productsByDate) {
+    async execute(orderId, productsByDate, updatedByUserId = null) {
         const order = await this.orderRepository.findById(orderId);
 
         if (!order) {
@@ -75,6 +75,10 @@ class CreateOrderDetailsUseCase {
             }
         }
         
+        if (updatedByUserId) {
+            order.updatedBy = updatedByUserId;
+        }
+
         await order.save();
 
         return orderDetails;
