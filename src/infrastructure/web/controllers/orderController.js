@@ -19,7 +19,7 @@ const orderController = {
             for (const orderDate in orders) {
                 const products = orders[orderDate];
                 const createdOrder = await CreateOrderUseCase.execute(shopId, orderDate, userId, cityId, platformId, details);
-                const createdOrderDetails = await CreateOrderDetailsUseCase.execute(createdOrder._id, products);
+                const createdOrderDetails = await CreateOrderDetailsUseCase.execute(createdOrder._id, products, userId);
                 createdOrders.push({ order: createdOrder, orderDetails: createdOrderDetails });
             }
 

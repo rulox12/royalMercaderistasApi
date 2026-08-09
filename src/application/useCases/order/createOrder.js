@@ -7,13 +7,28 @@ class CreateOrderUseCase {
     }
 
     async execute(shopId, date, userId, cityId, platformId, details) {
-        const newOrder = new Order(null, formatDateForDatabase(date), shopId, "Pending", userId, cityId, platformId, [], details);
+        const newOrder = new Order(
+            null,
+            formatDateForDatabase(date),
+            shopId,
+            "Pending",
+            userId,
+            cityId,
+            platformId,
+            [],
+            details,
+            userId,
+            userId,
+        );
         const existOrder = await this.orderRepository.getOrderByDateAndShop(date, shopId);
 
         if (existOrder) {
             if (existOrder.details !== details) {
                 existOrder.details = details;
-                return await this.orderRepository.update(existOrder._id, {details});
+                return await this.orderRepository.update(existOrder._id, {
+                    details,
+                    updatedBy: userId,
+                });
             }
             return existOrder;
         } else {
