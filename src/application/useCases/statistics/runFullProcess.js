@@ -104,12 +104,12 @@ class RunFullProcessUseCase {
 
     const scripts = [
       {
-        name: "ventas",
-        file: path.resolve(__dirname, "../../../../src/scripts/migration/calculateSalesRange.js"),
-      },
-      {
         name: "recibidas",
         file: path.resolve(__dirname, "../../../../src/scripts/migration/calculateReceivedRange.js"),
+      },
+      {
+        name: "ventas",
+        file: path.resolve(__dirname, "../../../../src/scripts/migration/calculateSalesRange.js"),
       },
       {
         name: "rentabilidad",
