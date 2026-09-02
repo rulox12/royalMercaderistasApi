@@ -27,7 +27,7 @@ class GetShopDashboardUseCase {
         return parsedDate;
     }
 
-    async execute(shopId, startDateA, endDateA, startDateB, endDateB) {
+    async execute(shopId, startDateA, endDateA, startDateB, endDateB, filters = {}) {
         const startA = this.parseDateStart(startDateA);
         const endA = this.parseDateEnd(endDateA);
         const startB = this.parseDateStart(startDateB);
@@ -37,8 +37,14 @@ class GetShopDashboardUseCase {
             throw new Error('La fecha inicial no puede ser mayor a la fecha final');
         }
 
-        const ordersA = await this.orderRepository.getOrdersByShopAndDateRange(shopId, startA, endA);
-        const ordersB = await this.orderRepository.getOrdersByShopAndDateRange(shopId, startB, endB);
+        const orderFilters = {
+            ...(shopId ? { shop: shopId } : {}),
+            ...(filters.platformId ? { platform: filters.platformId } : {}),
+            ...(filters.cityId ? { cityId: filters.cityId } : {}),
+        };
+
+        const ordersA = await this.orderRepository.getOrdersByDateRange(startA, endA, orderFilters);
+        const ordersB = await this.orderRepository.getOrdersByDateRange(startB, endB, orderFilters);
 
         const toIntSafe = (v) => {
             const n = parseInt(v, 10);

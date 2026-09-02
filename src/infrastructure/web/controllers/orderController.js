@@ -237,12 +237,6 @@ const orderController = {
                 yearB
             } = req.query;
 
-            if (!platformId) {
-                return res.status(400).json({
-                    error: 'Debe enviar platformId en la query'
-                });
-            }
-
             // Backward compatibility: convert month/year to dates if needed
             let finalStartDateA = startDateA;
             let finalEndDateA = endDateA;

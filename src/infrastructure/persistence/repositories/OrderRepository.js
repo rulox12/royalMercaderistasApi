@@ -176,9 +176,10 @@ class OrderRepository {
         }).populate('orderDetails.product').exec();
     }
 
-    async getOrdersByDateRange(startDate, endDate) {
+    async getOrdersByDateRange(startDate, endDate, filters = {}) {
         return OrderModel.find({
-            date: { $gte: startDate, $lte: endDate }
+            date: { $gte: startDate, $lte: endDate },
+            ...filters,
         }).populate('orderDetails.product').exec();
     }
 
@@ -200,7 +201,7 @@ class OrderRepository {
 
     async getOrdersByPlatformAndDateRange(platformId, ranges) {
         return OrderModel.find({
-            platform: platformId,
+            ...(platformId ? { platform: platformId } : {}),
             $or: ranges.map(r => ({
                 date: { $gte: r.start, $lte: r.end }
             }))

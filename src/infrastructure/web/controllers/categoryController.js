@@ -28,13 +28,19 @@ const categoryController = {
 
   getCategorySalesSummary: async (req, res) => {
     try {
-      const { startDate, endDate, categoryId } = req.query;
+      const { startDate, endDate, categoryId, platformId, cityId, shopId } = req.query;
 
       if (!startDate || !endDate) {
         return res.status(400).json({ error: 'startDate y endDate son obligatorias' });
       }
 
-      const summary = await GetCategorySalesSummaryUseCase.execute(startDate, endDate, categoryId);
+      const filters = {
+        ...(platformId ? { platform: platformId } : {}),
+        ...(cityId ? { cityId } : {}),
+        ...(shopId ? { shop: shopId } : {}),
+      };
+
+      const summary = await GetCategorySalesSummaryUseCase.execute(startDate, endDate, categoryId, filters);
       res.status(200).json(summary);
     } catch (error) {
       res.status(500).json({ error: error.message });

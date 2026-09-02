@@ -5,6 +5,8 @@ const shopDashboardController = {
     try {
       const {
         shopId,
+        platformId,
+        cityId,
         startDateA,
         endDateA,
         startDateB,
@@ -14,10 +16,6 @@ const shopDashboardController = {
         monthB,
         yearB
       } = req.query;
-
-      if (!shopId) {
-        return res.status(400).json({ error: 'Parámetro requerido: shopId' });
-      }
 
       let periodStartA = startDateA;
       let periodEndA = endDateA;
@@ -44,7 +42,7 @@ const shopDashboardController = {
 
       if (!periodStartA || !periodEndA || !periodStartB || !periodEndB) {
         return res.status(400).json({
-          error: 'Parámetros requeridos: shopId, startDateA, endDateA, startDateB, endDateB'
+          error: 'Parámetros requeridos: startDateA, endDateA, startDateB, endDateB'
         });
       }
 
@@ -53,7 +51,11 @@ const shopDashboardController = {
         periodStartA,
         periodEndA,
         periodStartB,
-        periodEndB
+        periodEndB,
+        {
+          platformId,
+          cityId,
+        }
       );
 
       res.status(200).json(result);

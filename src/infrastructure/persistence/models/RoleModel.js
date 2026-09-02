@@ -7,6 +7,10 @@ const roleSchema = new Schema({
     required: true,
   },
   description: String,
+  permissions: {
+    type: [String],
+    default: [],
+  },
 });
 
 const RoleModel = mongoose.model('Role', roleSchema);

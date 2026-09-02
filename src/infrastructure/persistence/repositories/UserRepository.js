@@ -8,11 +8,11 @@ class UserRepository {
   }
 
   async findById(userId) {
-    return UserModel.findById(userId).exec();
+    return UserModel.findById(userId).populate('roleId').exec();
   }
 
   async findByEmail(email) {
-    return UserModel.findOne({ email }).exec();
+    return UserModel.findOne({ email }).populate('roleId').exec();
   }
 
   async getAllUsers() {

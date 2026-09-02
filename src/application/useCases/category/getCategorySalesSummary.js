@@ -35,7 +35,7 @@ class GetCategorySalesSummaryUseCase {
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
-  async execute(startDate, endDate, categoryId) {
+  async execute(startDate, endDate, categoryId, filters = {}) {
     const start = this.parseDateStart(startDate);
     const end = this.parseDateEnd(endDate);
 
@@ -45,7 +45,7 @@ class GetCategorySalesSummaryUseCase {
 
     const [categories, orders] = await Promise.all([
       this.categoryRepository.getAll(),
-      this.orderRepository.getOrdersByDateRange(start, end),
+      this.orderRepository.getOrdersByDateRange(start, end, filters),
     ]);
 
     const categoriesById = new Map(
