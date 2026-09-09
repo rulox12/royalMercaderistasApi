@@ -15,7 +15,7 @@ const CalculateSalesUseCase = require('../../application/useCases/order/Calculat
  * Usage: node calculateSalesRange.js "2026-01-01" "2026-02-19"
  */
 
-async function calculateSalesRange(startDate, endDate) {
+async function calculateSalesRange(startDate, endDate, source = 'manual_admin') {
     try {
         // Validate date format
         const start = new Date(startDate);
@@ -47,7 +47,7 @@ async function calculateSalesRange(startDate, endDate) {
             // Calculate sales for each shop
             for (const shop of shops) {
                 try {
-                    await CalculateSalesUseCase.execute(shop._id, dateStr);
+                    await CalculateSalesUseCase.execute(shop._id, dateStr, { source });
                     console.log(`  ✅ Ventas calculadas para tienda ${shop._id}`);
                     success++;
                 } catch (err) {
@@ -70,6 +70,7 @@ async function calculateSalesRange(startDate, endDate) {
 
 const startDate = process.argv[2];
 const endDate = process.argv[3];
+const source = process.argv[4] || 'manual_admin';
 
 if (!startDate || !endDate) {
     console.error('❌ Uso: node calculateSalesRange.js "YYYY-MM-DD" "YYYY-MM-DD"');
@@ -77,4 +78,4 @@ if (!startDate || !endDate) {
     process.exit(1);
 }
 
-calculateSalesRange(startDate, endDate);
+calculateSalesRange(startDate, endDate, source);

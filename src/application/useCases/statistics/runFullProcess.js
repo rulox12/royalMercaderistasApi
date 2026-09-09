@@ -125,7 +125,7 @@ class RunFullProcessUseCase {
       const startedAt = Date.now();
 
       try {
-        const result = await this.runNodeScript(script.file, [startDate, endDate]);
+        const result = await this.runNodeScript(script.file, [startDate, endDate, "manual_admin"]);
         output.push({
           step: script.name,
           status: "✅ Éxito",
