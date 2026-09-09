@@ -11,3 +11,4 @@ require("./ListProductModel");
 require("./SupplierModel");
 require("./BigOrderModel");
 require("./RealSaleModel");
+require("./SalesCalculationLogModel");

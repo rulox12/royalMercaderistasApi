@@ -16,7 +16,7 @@ async function runJobSales() {
         for (const shop of shops) {
             try {
                 console.log(`📦 Calculando ventas para tienda ${shop._id} en fecha ${dateStr}`);
-                await CalculateSalesUseCase.execute(shop._id, dateStr);
+                await CalculateSalesUseCase.execute(shop._id, dateStr, { source: "scheduled_job" });
                 console.log(`✅ Ventas calculadas para tienda ${shop._id}`);
             } catch (err) {
                 console.warn(`⚠️ Error en tienda ${shop._id}: ${err.message}`);
