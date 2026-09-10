@@ -33,7 +33,11 @@ const statisticsController = {
             if (source) filters.source = source;
             if (targetDate) filters.targetDate = targetDate;
             if (shop) filters.shop = shop;
-            const logs = await salesCalculationLogRepository.find(filters, Number(limit) || 100);
+            const requestedLimit = Number(limit);
+            const safeLimit = Number.isFinite(requestedLimit) && requestedLimit > 0
+                ? Math.min(requestedLimit, 5000)
+                : 5000;
+            const logs = await salesCalculationLogRepository.find(filters, safeLimit);
             res.json(logs);
         } catch (error) {
             res.status(400).json({ error: error.message });
