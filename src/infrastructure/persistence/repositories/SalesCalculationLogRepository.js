@@ -10,6 +10,8 @@ class SalesCalculationLogRepository {
         return SalesCalculationLogModel.find(filters)
             .sort({ createdAt: -1 })
             .limit(limit)
+            .populate('shop', 'name shopNumber')
+            .populate('calculations.product', 'name displayName internalProductNumber presentation')
             .lean()
             .exec();
     }
