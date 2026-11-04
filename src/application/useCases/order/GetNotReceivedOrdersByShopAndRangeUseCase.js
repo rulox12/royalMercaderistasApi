@@ -24,6 +24,10 @@ class GetNotReceivedOrdersByShopAndRangeUseCase {
         const missingDays = [];
 
         for (let date = moment(start); date.isSameOrBefore(end); date.add(1, 'days')) {
+            // Los domingos no se espera orden, no generan alerta.
+            if (date.day() === 0) {
+                continue;
+            }
             const orders = await this.orderRepository.getOrderByDateAndShop( date.format('YYYY-MM-DD'), shopId);
             const city = await this.cityRepository.findById(shop.cityId);
             const user = await this.userRepository.findById(shop.userId);
