@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const OrderModel = require("../models/OrderModel");
 
 class OrderRepository {
@@ -174,6 +175,47 @@ class OrderRepository {
             shop: shopId,
             date: { $gte: startDate, $lte: endDate }
         }).populate('orderDetails.product').exec();
+    }
+
+    async getLatestOrderDetailsByShopBeforeDate(shopId, beforeDate, productIds) {
+        const productObjectIds = productIds
+            .filter((productId) => mongoose.Types.ObjectId.isValid(productId))
+            .map((productId) => new mongoose.Types.ObjectId(productId));
+
+        if (productObjectIds.length === 0) {
+            return [];
+        }
+
+        return OrderModel.aggregate([
+            {
+                $match: {
+                    shop: new mongoose.Types.ObjectId(shopId),
+                    date: { $lt: beforeDate },
+                },
+            },
+            { $unwind: "$orderDetails" },
+            {
+                $match: {
+                    "orderDetails.product": { $in: productObjectIds },
+                    "orderDetails.INVE": {
+                        $exists: true,
+                        $nin: [null, ""],
+                        $not: /^\s*$/,
+                    },
+                },
+            },
+            { $sort: { date: -1, _id: -1 } },
+            {
+                $group: {
+                    _id: "$orderDetails.product",
+                    date: { $first: "$date" },
+                    INVE: { $first: "$orderDetails.INVE" },
+                    AVER: { $first: "$orderDetails.AVER" },
+                    RECI: { $first: "$orderDetails.RECI" },
+                    PEDI: { $first: "$orderDetails.PEDI" },
+                },
+            },
+        ]);
     }
 
     async getOrdersByDateRange(startDate, endDate, filters = {}) {

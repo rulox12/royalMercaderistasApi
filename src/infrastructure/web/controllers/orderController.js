@@ -5,25 +5,54 @@ const CreateOrderDetailsUseCase = require('../../../application/useCases/order/c
 const GetManyOrdersUseCase = require('../../../application/useCases/order/getManyOrdersUseCase');
 const GetNotReceivedOrdersUseCase = require('../../../application/useCases/order/GetNotReceivedOrdersUseCase');
 const GetNotReceivedOrdersByShopAndRangeUseCase = require('../../../application/useCases/order/GetNotReceivedOrdersByShopAndRangeUseCase');
+const GetOrderAlertsByShopAndRangeUseCase = require('../../../application/useCases/order/GetOrderAlertsByShopAndRangeUseCase');
+const ValidateOrderInventoryUseCase = require('../../../application/useCases/order/ValidateOrderInventoryUseCase');
+const UpdateOrdersStatusUseCase = require('../../../application/useCases/order/UpdateOrdersStatusUseCase');
 const getOrdersByDateWithDetails = require('../../../application/useCases/order/getOrdersByDateWithDetails');
 const CalculateSalesUseCase = require('../../../application/useCases/order/CalculateSalesUseCase');
 const CompareOrdersByMonthYearUseCase = require('../../../application/useCases/order/CompareOrdersByMonthYearUseCase');
 const ComparePlatformsUseCase = require('../../../application/useCases/order/ComparePlatformsUseCase');
 const ComparePlatformCitiesUseCase = require('../../../application/useCases/order/ComparePlatformCitiesUseCase');
 
+const PENDING_STATUS = "Pending";
+const { PENDING_CORRECTION_STATUS } = GetOrderAlertsByShopAndRangeUseCase;
+
+// Solo alterna entre Pending y PendingCorrection; no toca órdenes ya aprobadas.
+function resolveOrderStatus(currentStatus, hasErrors) {
+    if (hasErrors && (currentStatus === PENDING_STATUS || currentStatus === PENDING_CORRECTION_STATUS)) {
+        return PENDING_CORRECTION_STATUS;
+    }
+    if (!hasErrors && currentStatus === PENDING_CORRECTION_STATUS) {
+        return PENDING_STATUS;
+    }
+    return currentStatus;
+}
+
 const orderController = {
     createOrder: async (req, res) => {
         try {
             const { shopId, userId, orders, cityId, platformId, details } = req.body;
             const createdOrders = [];
+            const validationErrors = [];
             for (const orderDate in orders) {
                 const products = orders[orderDate];
+                const errors = await ValidateOrderInventoryUseCase.execute(
+                    shopId,
+                    orderDate,
+                    products,
+                );
+                validationErrors.push(...errors);
                 const createdOrder = await CreateOrderUseCase.execute(shopId, orderDate, userId, cityId, platformId, details);
                 const createdOrderDetails = await CreateOrderDetailsUseCase.execute(createdOrder._id, products, userId);
+                const nextStatus = resolveOrderStatus(createdOrder.status, errors.length > 0);
+                if (nextStatus !== createdOrder.status) {
+                    await UpdateOrdersStatusUseCase.execute([createdOrder._id], nextStatus);
+                    createdOrder.status = nextStatus;
+                }
                 createdOrders.push({ order: createdOrder, orderDetails: createdOrderDetails });
             }
 
-            res.status(201).json({ createdOrders });
+            res.status(201).json({ createdOrders, validationErrors });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -121,6 +150,25 @@ const orderController = {
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: "Error al obtener órdenes no recibidas" });
+        }
+    },
+
+    getOrderAlertsByShopAndRange: async (req, res) => {
+        try {
+            const { shopId, startDate, endDate } = req.params;
+            const { incompleteOrders, pendingCorrectionOrders } = await GetOrderAlertsByShopAndRangeUseCase.execute(
+                shopId,
+                startDate,
+                endDate,
+            );
+
+            return res.json({ shopId, startDate, endDate, incompleteOrders, pendingCorrectionOrders });
+        } catch (error) {
+            if (error instanceof RangeError) {
+                return res.status(400).json({ error: error.message });
+            }
+            console.error(error);
+            return res.status(500).json({ error: "Error al obtener alertas de órdenes" });
         }
     },
 
