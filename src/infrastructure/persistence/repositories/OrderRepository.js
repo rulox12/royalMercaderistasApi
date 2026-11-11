@@ -193,26 +193,22 @@ class OrderRepository {
                     date: { $lt: beforeDate },
                 },
             },
+            { $sort: { date: -1, _id: -1 } },
+            { $limit: 1 },
             { $unwind: "$orderDetails" },
             {
                 $match: {
                     "orderDetails.product": { $in: productObjectIds },
-                    "orderDetails.INVE": {
-                        $exists: true,
-                        $nin: [null, ""],
-                        $not: /^\s*$/,
-                    },
                 },
             },
-            { $sort: { date: -1, _id: -1 } },
             {
-                $group: {
+                $project: {
                     _id: "$orderDetails.product",
-                    date: { $first: "$date" },
-                    INVE: { $first: "$orderDetails.INVE" },
-                    AVER: { $first: "$orderDetails.AVER" },
-                    RECI: { $first: "$orderDetails.RECI" },
-                    PEDI: { $first: "$orderDetails.PEDI" },
+                    date: 1,
+                    INVE: "$orderDetails.INVE",
+                    AVER: "$orderDetails.AVER",
+                    RECI: "$orderDetails.RECI",
+                    PEDI: "$orderDetails.PEDI",
                 },
             },
         ]);
